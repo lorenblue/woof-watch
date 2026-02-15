@@ -13,10 +13,11 @@ enum ActionType {
 }
 
 model Actor {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  code      String   @unique
-  createdAt DateTime @default(now())
+  id         String    @id @default(cuid())
+  name       String    @unique
+  code       String    @unique
+  codeUsedAt DateTime?
+  createdAt  DateTime  @default(now())
 
   events DogEvent[]
   pushes PushSubscription[]
