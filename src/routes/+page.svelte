@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
+    export let data: { actorName: string | null };
     
     type LastEvt = { at: string; by: string; type?: 'pee' | 'poo' } | null;
     type DogStatus = {
@@ -88,7 +89,11 @@
 		{/each}
 	</section>
 	
-	<p class="mt-4 text-xs text-zinc-400">
-		Link this device by visiting <code class="rounded-lg bg-zinc-900 px-2 py-0.5">/link?code=ABC123</code> (use your actor code).
-	</p>
+	{#if data.actorName}
+		<p class="mt-4 text-xs text-zinc-400">Linked as {data.actorName} ✅</p>
+	{:else}
+		<p class="mt-4 text-xs text-zinc-400">
+			Link this device by visiting <code class="rounded-lg bg-zinc-900 px-2 py-0.5">/link?code=ABC123</code> (use your actor code).
+		</p>
+	{/if}
 </main>
