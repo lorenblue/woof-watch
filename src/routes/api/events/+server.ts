@@ -14,6 +14,27 @@ export async function POST({ request, cookies }) {
     if (!dogId) throw error(400, 'dogId required');
     if (!actionType || !isActionType(actionType)) throw error(400, 'bad actionType');
 
+		const mostRecentEvt = await prisma.dogEvent.findFirst({
+			where: {
+				dogId,
+				actionType
+			},
+			orderBy: {
+				occurredAt: 'desc'
+			}
+		});
+
+		const MIN_EVENT_INTERVAL_MS = 5 * 60 * 1000;
+
+		if (mostRecentEvt) {
+			const lastOccurredAt = new Date(mostRecentEvt.occurredAt).getTime();
+			const now = Date.now();
+
+			if (now - lastOccurredAt < MIN_EVENT_INTERVAL_MS) {
+				throw error(429, 'Event posted too recently');
+			}
+		}
+		
     const evt = await prisma.dogEvent.create({
         data: { dogId, actionType, actorId: actor.id }
     });
