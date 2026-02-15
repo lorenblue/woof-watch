@@ -1,0 +1,63 @@
+datasource db {
+  provider = "sqlite"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum ActionType {
+  pee
+  poo
+  eat
+}
+
+model Actor {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  code      String   @unique
+  createdAt DateTime @default(now())
+
+  events DogEvent[]
+  pushes PushSubscription[]
+}
+
+model Dog {
+  id   String @id
+  name String @unique
+
+  events DogEvent[]
+}
+
+model DogEvent {
+  id         String     @id @default(cuid())
+  dogId      String
+  actionType ActionType
+  occurredAt DateTime   @default(now())
+  recordedAt DateTime   @default(now())
+  actorId    String
+
+  undoneAt   DateTime?
+  undoneById String?
+
+  dog   Dog   @relation(fields: [dogId], references: [id])
+  actor Actor @relation(fields: [actorId], references: [id])
+
+  @@index([dogId, actionType, occurredAt])
+  @@index([actorId, recordedAt])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  actorId   String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  lastSeenAt DateTime @default(now())
+
+  actor Actor @relation(fields: [actorId], references: [id])
+
+  @@index([actorId])
+}
