@@ -5,7 +5,6 @@
     type DogStatus = {
         dogId: string;
         name: string;
-        lastOut: LastEvt;
         lastPee: LastEvt;
         lastPoo: LastEvt;
         lastEat: LastEvt;
@@ -61,9 +60,6 @@
 		{#each dogs as d}
 			<div class="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
 				<h2 class="mb-3 mt-0 text-base font-semibold">{d.name}</h2>
-				<div class="flex justify-between gap-3 py-1 text-sm text-zinc-300">
-					<strong class="font-semibold text-zinc-100">Last out</strong><span class="text-right">{fmt(d.lastOut)}</span>
-				</div>
 				<div class="flex justify-between gap-3 py-1 text-sm text-zinc-300">
 					<strong class="font-semibold text-zinc-100">Last pee</strong><span class="text-right">{fmt(d.lastPee)}</span>
 				</div>
