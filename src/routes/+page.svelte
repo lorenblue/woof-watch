@@ -1,9 +1,23 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import type { StatusResponse, DogStatus, LastEvt, ActionType } from '$lib/shared/types';
+    import humanizeDuration from "humanize-duration";
     
     export let data: { actorName: string | null };
-    
+
+    const humanizer = humanizeDuration.humanizer({
+        round: true,
+        spacer: "",
+        language: "short",
+        languages: {
+            short: {
+                h: () => "h",
+                m: () => "m",
+            },
+        },
+	    units: ["h", "m"],
+	    delimiter: " "
+    });
 
     let dogs: DogStatus[] = [];
     let toast = '';
@@ -16,8 +30,24 @@
 
     function fmt(evt: LastEvt) {
         if (!evt) return '—';
+
         const at = new Date(evt.at);
-        return `${at.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • ${evt.by}`;
+        const ms = Date.now() - at.getTime();
+        
+        const oneMinuteMs = 60 * 1000;
+
+        if (ms < oneMinuteMs) {
+            return `Just now • ${evt.by}`;
+        }
+        
+        const fiveHoursMs = 5 * 60 * 60 * 1000;
+        const shouldShowMinutes = ms < fiveHoursMs;
+        
+        const rel = humanizer(ms, {
+            largest: shouldShowMinutes ? 2 : 1
+        });
+
+        return `${rel} ago • ${evt.by}`;
     }
 
     async function log(dogId: string, actionType: ActionType) {
