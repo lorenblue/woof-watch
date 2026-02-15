@@ -13,12 +13,6 @@
     let dogs: DogStatus[] = [];
     let toast = '';
 
-    const actions = [
-        { id: 'pee', label: 'Pee' },
-        { id: 'poo', label: 'Poo' },
-        { id: 'eat', label: 'Eat' }
-    ] as const;
-
     async function refresh() {
         const res = await fetch('/api/status');
         dogs = (await res.json()).dogs;
@@ -27,9 +21,7 @@
     function fmt(evt: LastEvt) {
         if (!evt) return '—';
         const at = new Date(evt.at);
-        const mins = Math.floor((Date.now() - at.getTime()) / 60000);
-        const ago = mins < 1 ? 'just now' : mins < 60 ? `${mins}m ago` : `${Math.floor(mins / 60)}h ${mins % 60}m ago`;
-        return `${at.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} (${ago}) • ${evt.by}`;
+        return `${at.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • ${evt.by}`;
     }
 
     async function log(dogId: string, actionType: 'pee' | 'poo' | 'eat') {
@@ -60,21 +52,38 @@
 		{#each dogs as d}
 			<div class="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
 				<h2 class="mb-3 mt-0 text-base font-semibold">{d.name}</h2>
-				<div class="flex justify-between gap-3 py-1 text-sm text-zinc-300">
-					<strong class="font-semibold text-zinc-100">Last pee</strong><span class="text-right">{fmt(d.lastPee)}</span>
-				</div>
-				<div class="flex justify-between gap-3 py-1 text-sm text-zinc-300">
-					<strong class="font-semibold text-zinc-100">Last poo</strong><span class="text-right">{fmt(d.lastPoo)}</span>
-				</div>
-				<div class="flex justify-between gap-3 py-1 text-sm text-zinc-300">
-					<strong class="font-semibold text-zinc-100">Last eat</strong><span class="text-right">{fmt(d.lastEat)}</span>
-				</div>
 				
-				<div class="mt-3 grid grid-cols-3 gap-2">
-					{#each actions as a}
-						<button class="rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-2 font-semibold active:scale-[0.99]" on:click={() => log(d.dogId, a.id)}>{a.label}</button>
-					{/each}
-				</div>
+				<div class="mt-3 grid grid-cols-1 gap-3">
+                    <div class="flex flex-col gap-1">
+                        <button
+                            class="rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-2 font-semibold active:scale-[0.99]"
+                            on:click={() => log(d.dogId, 'pee')}
+                        >
+                            💦 Pee
+                        </button>
+                        <div class="text-center text-xs text-zinc-400">{fmt(d.lastPee)}</div>
+                    </div>
+
+                    <div class="flex flex-col gap-1">
+                        <button
+                            class="rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-2 font-semibold active:scale-[0.99]"
+                            on:click={() => log(d.dogId, 'poo')}
+                        >
+                            💩 Poo
+                        </button>
+                        <div class="text-center text-xs text-zinc-400">{fmt(d.lastPoo)}</div>
+                    </div>
+
+                    <div class="flex flex-col gap-1">
+                        <button
+                            class="rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-2 font-semibold active:scale-[0.99]"
+                            on:click={() => log(d.dogId, 'eat')}
+                        >
+                            🥣 Eat
+                        </button>
+                        <div class="text-center text-xs text-zinc-400">{fmt(d.lastEat)}</div>
+                    </div>
+                </div>
 			</div>
 		{/each}
 	</section>
