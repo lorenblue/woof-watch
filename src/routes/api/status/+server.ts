@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { prisma } from '$lib/server/prisma';
+import type { DogStatus, StatusResponse } from '$lib/shared/types';
 
 function mapEvt(e: any) {
     return e ? { at: e.occurredAt.toISOString(), by: e.actor.name } : null;
@@ -7,7 +8,7 @@ function mapEvt(e: any) {
 export async function GET() {
     const dogs = await prisma.dog.findMany({ orderBy: { name: 'asc' } });
 
-    const result = [];
+    const result: DogStatus[] = [];
     for (const dog of dogs) {
         const [pee, poo, eat] = await Promise.all([
             prisma.dogEvent.findFirst({ where: { dogId: dog.id, actionType: 'pee', undoneAt: null }, orderBy: { occurredAt: 'desc' }, include: { actor: true } }),
@@ -27,6 +28,7 @@ export async function GET() {
             lastEat,
         });
     }
-
-    return json({ dogs: result });
+		
+		const payload: StatusResponse = { dogs: result };
+		return json(payload);
 }

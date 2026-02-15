@@ -1,22 +1,17 @@
 <script lang="ts">
     import { onMount } from 'svelte';
+    import type { StatusResponse, DogStatus, LastEvt, ActionType } from '$lib/shared/types';
+    
     export let data: { actorName: string | null };
     
-    type LastEvt = { at: string; by: string; type?: 'pee' | 'poo' } | null;
-    type DogStatus = {
-        dogId: string;
-        name: string;
-        lastPee: LastEvt;
-        lastPoo: LastEvt;
-        lastEat: LastEvt;
-    };
 
     let dogs: DogStatus[] = [];
     let toast = '';
 
     async function refresh() {
         const res = await fetch('/api/status');
-        dogs = (await res.json()).dogs;
+        const data: StatusResponse = await res.json();
+        dogs = data.dogs;
     }
 
     function fmt(evt: LastEvt) {
@@ -25,7 +20,7 @@
         return `${at.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • ${evt.by}`;
     }
 
-    async function log(dogId: string, actionType: 'pee' | 'poo' | 'eat') {
+    async function log(dogId: string, actionType: ActionType) {
         toast = 'Logged ✅';
         const res = await fetch('/api/events', {
             method: 'POST',
