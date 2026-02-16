@@ -78,27 +78,36 @@
         }
     }
 
-    onMount(refresh);
+    onMount(() => {
+        refresh();
+
+        const handler = () => {
+            if (document.visibilityState === 'visible') {
+                refresh();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handler);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handler);
+        };
+    });
 </script>
 
 <main class="h-dvh bg-black text-zinc-100 flex flex-col overflow-hidden">
 
     <!-- Header -->
-    <header class="px-5 pt-6 pb-2">
-        <div class="flex items-center justify-between">
+    <header class="px-5 pt-6 pb-3">
+        <div class="flex items-baseline justify-between">
             <h1 class="text-2xl font-bold tracking-tight">Woof Watch</h1>
-            <button
-                class="text-sm font-medium text-zinc-400 active:opacity-50"
-                on:click={refresh}
-            >
-                Refresh
-            </button>
+
+            {#if data.actorName}
+                <span class="text-xs text-emerald-400 font-medium">
+                    Linked as {data.actorName}
+                </span>
+            {/if}
         </div>
-
-        {#if data.actorName}
-            <p class="mt-2 text-xs text-emerald-400">Linked as {data.actorName}</p>
-        {/if}
-
     </header>
 
     <!-- Dogs Area -->
