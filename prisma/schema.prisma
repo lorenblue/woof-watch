@@ -19,8 +19,9 @@ model Actor {
   codeUsedAt DateTime?
   createdAt  DateTime  @default(now())
 
-  events DogEvent[]
-  pushes PushSubscription[]
+  events   DogEvent[]
+  pushes   PushSubscription[]
+  sessions Session[]
 }
 
 model Dog {
@@ -48,14 +49,24 @@ model DogEvent {
   @@index([actorId, recordedAt])
 }
 
-model PushSubscription {
+model Session {
   id        String   @id @default(cuid())
   actorId   String
-  endpoint  String   @unique
-  p256dh    String
-  auth      String
-  active    Boolean  @default(true)
+  actor     Actor    @relation(fields: [actorId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@index([actorId])
+}
+
+model PushSubscription {
+  id         String   @id @default(cuid())
+  actorId    String
+  endpoint   String   @unique
+  p256dh     String
+  auth       String
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
   lastSeenAt DateTime @default(now())
 
   actor Actor @relation(fields: [actorId], references: [id])
