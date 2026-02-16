@@ -2,6 +2,7 @@
     import { onMount } from 'svelte';
     import type { StatusResponse, DogStatus, LastEvt, ActionType } from '$lib/shared/types';
     import humanizeDuration from "humanize-duration";
+    import "ios-vibrator-pro-max";
     
     export let data: { actorName: string | null };
 
@@ -46,6 +47,21 @@
         return `${rel} ago • ${evt.by}`;
     }
 
+    const haptics = {
+        pee() {
+            navigator.vibrate?.([20]);
+        },
+        poo() {
+            navigator.vibrate?.([20, 200, 20]);
+        },
+        eat() {
+            navigator.vibrate?.([20, 200, 20, 200, 20]);
+        },
+        error() {
+            navigator.vibrate?.([300]);
+        }
+    };
+
     async function log(dogId: string, actionType: ActionType) {
         success = null;
         error = null;
@@ -58,6 +74,8 @@
             });
 
             if (!res.ok) {
+                haptics.error();
+
                 let message = 'Failed';
                 try {
                     const body = await res.json();
@@ -70,9 +88,14 @@
             }
 
             success = { dogId, type: actionType };
+
+            haptics[actionType]();
+
             await refresh();
             setTimeout(() => success = null, 1500);
         } catch {
+            haptics.error();
+
             error = { dogId, type: actionType, message: 'Network error' };
             setTimeout(() => error = null, 2500);
         }
