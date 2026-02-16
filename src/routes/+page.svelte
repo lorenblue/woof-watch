@@ -17,6 +17,7 @@
             },
         },
         units: ["h", "m"],
+	    largest: 1,
         delimiter: " "
     });
 
@@ -34,17 +35,11 @@
         if (!evt) return '—';
 
         const at = new Date(evt.at);
-        const ms = Date.now() - at.getTime();
-        
-        if (ms < 60 * 1000) {
-            return `Just now • ${evt.by}`;
-        }
-        
-        const rel = humanizer(ms, {
-            largest: ms < 5 * 60 * 60 * 1000 ? 2 : 1
-        });
+        const diffMs = Date.now() - at.getTime();
 
-        return `${rel} ago • ${evt.by}`;
+        return diffMs < 60 * 1000 
+	        ? `Just now • ${evt.by}` 
+	        : `${humanizer(diffMs)} ago • ${evt.by}`;
     }
 
     const haptics = {
@@ -118,7 +113,7 @@
     });
 </script>
 
-<main class="h-dvh bg-black text-zinc-100 flex flex-col overflow-hidden">
+<main class="h-dvh bg-black text-zinc-100 flex flex-col">
 
     <!-- Header -->
     <header class="px-5 pt-6 pb-3">
