@@ -15,8 +15,8 @@
                 m: () => "m",
             },
         },
-	    units: ["h", "m"],
-	    delimiter: " "
+        units: ["h", "m"],
+        delimiter: " "
     });
 
     let dogs: DogStatus[] = [];
@@ -34,17 +34,12 @@
         const at = new Date(evt.at);
         const ms = Date.now() - at.getTime();
         
-        const oneMinuteMs = 60 * 1000;
-
-        if (ms < oneMinuteMs) {
+        if (ms < 60 * 1000) {
             return `Just now • ${evt.by}`;
         }
         
-        const fiveHoursMs = 5 * 60 * 60 * 1000;
-        const shouldShowMinutes = ms < fiveHoursMs;
-        
         const rel = humanizer(ms, {
-            largest: shouldShowMinutes ? 2 : 1
+            largest: ms < 5 * 60 * 60 * 1000 ? 2 : 1
         });
 
         return `${rel} ago • ${evt.by}`;
@@ -57,68 +52,89 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ dogId, actionType })
         });
-        if (!res.ok) toast = `Error: ${await res.text()}`;
+        if (!res.ok) toast = `Error`;
         await refresh();
-        setTimeout(() => (toast = ''), 2000);
+        setTimeout(() => (toast = ''), 1800);
     }
 
-    onMount(() => {
-        refresh();
-    });
+    onMount(refresh);
 </script>
 
-<main class="min-h-screen bg-zinc-950 text-zinc-100 p-4">
-	<header class="flex flex-wrap items-center gap-3">
-		<h1 class="m-0 text-xl font-semibold">Woof Watch</h1>
-		<button class="rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 font-semibold active:scale-[0.99]" on:click={refresh}>Refresh</button>
-		<span class="min-h-[1em] text-sm text-emerald-200">{toast}</span>
-	</header>
-	
-	<section class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-		{#each dogs as d}
-			<div class="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
-				<h2 class="mb-3 mt-0 text-base font-semibold">{d.name}</h2>
-				
-				<div class="mt-3 grid grid-cols-1 gap-3">
-                    <div class="flex flex-col gap-1">
+<main class="h-screen bg-black text-zinc-100 flex flex-col">
+
+    <!-- Header -->
+    <header class="px-5 pt-8 pb-4">
+        <div class="flex items-center justify-between">
+            <h1 class="text-2xl font-bold tracking-tight">Woof Watch</h1>
+            <button
+                class="text-sm font-medium text-zinc-400 active:opacity-50"
+                on:click={refresh}
+            >
+                Refresh
+            </button>
+        </div>
+
+        {#if data.actorName}
+            <p class="mt-2 text-xs text-emerald-400">Linked as {data.actorName}</p>
+        {/if}
+
+        {#if toast}
+            <div class="mt-3 rounded-xl bg-emerald-500/15 py-2 text-center text-sm text-emerald-300">
+                {toast}
+            </div>
+        {/if}
+    </header>
+
+    <!-- Dogs Area -->
+    <section class="flex flex-1 flex-col gap-4 px-5 pb-6">
+        {#each dogs.slice(0,2) as d}
+            <div class="flex flex-1 flex-col rounded-3xl bg-zinc-900 p-5">
+                <h2 class="mb-4 text-lg font-semibold">{d.name}</h2>
+
+                <div class="flex flex-1 flex-col justify-between">
+
+                    <!-- Pee -->
+                    <div class="space-y-1">
                         <button
-                            class="rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-2 font-semibold active:scale-[0.99]"
+                            class="w-full rounded-2xl bg-sky-500/20 py-4 text-lg font-semibold active:scale-95"
                             on:click={() => log(d.dogId, 'pee')}
                         >
                             💦 Pee
                         </button>
-                        <div class="text-center text-xs text-zinc-400">{fmt(d.lastPee)}</div>
+                        <p class="text-center text-sm text-zinc-500">
+                            {fmt(d.lastPee)}
+                        </p>
                     </div>
 
-                    <div class="flex flex-col gap-1">
+                    <!-- Poo -->
+                    <div class="space-y-1">
                         <button
-                            class="rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-2 font-semibold active:scale-[0.99]"
+                            class="w-full rounded-2xl bg-amber-500/20 py-4 text-lg font-semibold active:scale-95"
                             on:click={() => log(d.dogId, 'poo')}
                         >
                             💩 Poo
                         </button>
-                        <div class="text-center text-xs text-zinc-400">{fmt(d.lastPoo)}</div>
+                        <p class="text-center text-sm text-zinc-500">
+                            {fmt(d.lastPoo)}
+                        </p>
                     </div>
 
-                    <div class="flex flex-col gap-1">
+                    <!-- Eat -->
+                    <div class="space-y-1">
                         <button
-                            class="rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-2 font-semibold active:scale-[0.99]"
+                            class="w-full rounded-2xl bg-emerald-500/20 py-4 text-lg font-semibold active:scale-95"
                             on:click={() => log(d.dogId, 'eat')}
                         >
                             🥣 Eat
                         </button>
-                        <div class="text-center text-xs text-zinc-400">{fmt(d.lastEat)}</div>
+                        <p class="text-center text-sm text-zinc-500">
+                            {fmt(d.lastEat)}
+                        </p>
                     </div>
+
                 </div>
-			</div>
-		{/each}
-	</section>
-	
-	{#if data.actorName}
-		<p class="mt-4 text-xs text-zinc-400">Linked as {data.actorName} ✅</p>
-	{:else}
-		<p class="mt-4 text-xs text-zinc-400">
-			Link this device by visiting <code class="rounded-lg bg-zinc-900 px-2 py-0.5">/link?code=ABC123</code> (use your actor code).
-		</p>
-	{/if}
+            </div>
+        {/each}
+    </section>
+
 </main>
