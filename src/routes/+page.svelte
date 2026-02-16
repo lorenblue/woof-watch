@@ -20,7 +20,8 @@
     });
 
     let dogs: DogStatus[] = [];
-    let toast = '';
+    let success: { dogId: string; type: ActionType } | null = null;
+    let error: { dogId: string; type: ActionType; message: string } | null = null;
 
     async function refresh() {
         const res = await fetch('/api/status');
@@ -46,15 +47,35 @@
     }
 
     async function log(dogId: string, actionType: ActionType) {
-        toast = 'Logged ✅';
-        const res = await fetch('/api/events', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ dogId, actionType })
-        });
-        if (!res.ok) toast = `Error`;
-        await refresh();
-        setTimeout(() => (toast = ''), 1800);
+        success = null;
+        error = null;
+
+        try {
+            const res = await fetch('/api/events', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ dogId, actionType })
+            });
+
+            if (!res.ok) {
+                let message = 'Failed';
+                try {
+                    const body = await res.json();
+                    if (body?.message) message = body.message;
+                } catch {}
+
+                error = { dogId, type: actionType, message };
+                setTimeout(() => error = null, 2500);
+                return;
+            }
+
+            success = { dogId, type: actionType };
+            await refresh();
+            setTimeout(() => success = null, 1500);
+        } catch {
+            error = { dogId, type: actionType, message: 'Network error' };
+            setTimeout(() => error = null, 2500);
+        }
     }
 
     onMount(refresh);
@@ -78,11 +99,6 @@
             <p class="mt-2 text-xs text-emerald-400">Linked as {data.actorName}</p>
         {/if}
 
-        {#if toast}
-            <div class="mt-3 rounded-xl bg-emerald-500/15 py-2 text-center text-sm text-emerald-300">
-                {toast}
-            </div>
-        {/if}
     </header>
 
     <!-- Dogs Area -->
@@ -101,9 +117,19 @@
                         >
                             💦 Pee
                         </button>
-                        <p class="text-center text-sm text-zinc-500">
-                            {fmt(d.lastPee)}
-                        </p>
+                        {#if success && success.dogId === d.dogId && success.type === 'pee'}
+                            <p class="text-center text-sm text-emerald-400 font-medium">
+                                Logged ✓
+                            </p>
+                        {:else if error && error.dogId === d.dogId && error.type === 'pee'}
+                            <p class="text-center text-sm text-red-400 font-medium">
+                                {error.message}
+                            </p>
+                        {:else}
+                            <p class="text-center text-sm text-zinc-500">
+                                {fmt(d.lastPee)}
+                            </p>
+                        {/if}
                     </div>
 
                     <!-- Poo -->
@@ -114,9 +140,19 @@
                         >
                             💩 Poo
                         </button>
-                        <p class="text-center text-sm text-zinc-500">
-                            {fmt(d.lastPoo)}
-                        </p>
+                        {#if success && success.dogId === d.dogId && success.type === 'poo'}
+                            <p class="text-center text-sm text-emerald-400 font-medium">
+                                Logged ✓
+                            </p>
+                        {:else if error && error.dogId === d.dogId && error.type === 'poo'}
+                            <p class="text-center text-sm text-red-400 font-medium">
+                                {error.message}
+                            </p>
+                        {:else}
+                            <p class="text-center text-sm text-zinc-500">
+                                {fmt(d.lastPoo)}
+                            </p>
+                        {/if}
                     </div>
 
                     <!-- Eat -->
@@ -127,9 +163,19 @@
                         >
                             🥣 Eat
                         </button>
-                        <p class="text-center text-sm text-zinc-500">
-                            {fmt(d.lastEat)}
-                        </p>
+                        {#if success && success.dogId === d.dogId && success.type === 'eat'}
+                            <p class="text-center text-sm text-emerald-400 font-medium">
+                                Logged ✓
+                            </p>
+                        {:else if error && error.dogId === d.dogId && error.type === 'eat'}
+                            <p class="text-center text-sm text-red-400 font-medium">
+                                {error.message}
+                            </p>
+                        {:else}
+                            <p class="text-center text-sm text-zinc-500">
+                                {fmt(d.lastEat)}
+                            </p>
+                        {/if}
                     </div>
 
                 </div>
