@@ -1,8 +1,8 @@
 import { json, error } from '@sveltejs/kit';
 import { prisma } from '$lib/server/prisma';
-import { requireActor } from '$lib/server/requireActor';
 import { isActionType } from '$lib/shared/types';
 import type { CreateEventRequest, CreateEventResponse, ActionType } from '$lib/shared/types';
+import { requireActor } from '$lib/server/auth';
 
 export async function POST({ request, cookies }) {
 	  const actor = await requireActor(cookies.get('sessionId') ?? undefined);
