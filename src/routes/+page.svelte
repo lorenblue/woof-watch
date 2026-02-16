@@ -81,10 +81,10 @@
     onMount(refresh);
 </script>
 
-<main class="h-screen bg-black text-zinc-100 flex flex-col">
+<main class="h-dvh bg-black text-zinc-100 flex flex-col overflow-hidden">
 
     <!-- Header -->
-    <header class="px-5 pt-8 pb-4">
+    <header class="px-5 pt-6 pb-2">
         <div class="flex items-center justify-between">
             <h1 class="text-2xl font-bold tracking-tight">Woof Watch</h1>
             <button
@@ -102,77 +102,77 @@
     </header>
 
     <!-- Dogs Area -->
-    <section class="flex flex-1 flex-col gap-4 px-5 pb-6">
+    <section class="flex flex-col gap-4 px-5 pb-6">
         {#each dogs.slice(0,2) as d}
-            <div class="flex flex-1 flex-col rounded-3xl bg-zinc-900 p-5">
-                <h2 class="mb-4 text-lg font-semibold">{d.name}</h2>
+            <div class="flex flex-col rounded-3xl bg-zinc-900 p-4">
+                <h2 class="mb-2 text-base font-semibold">{d.name}</h2>
 
-                <div class="flex flex-1 flex-col justify-between">
+                <div class="flex flex-col gap-4">
 
                     <!-- Pee -->
-                    <div class="space-y-1">
+                    <div class="flex flex-col gap-1">
                         <button
-                            class="w-full rounded-2xl bg-sky-500/20 py-4 text-lg font-semibold active:scale-95"
+                            class="w-full rounded-2xl bg-sky-500/20 py-3 text-base font-semibold active:scale-95"
                             on:click={() => log(d.dogId, 'pee')}
                         >
                             💦 Pee
                         </button>
                         {#if success && success.dogId === d.dogId && success.type === 'pee'}
-                            <p class="text-center text-sm text-emerald-400 font-medium">
+                            <p class="text-center text-xs text-emerald-400 font-medium">
                                 Logged ✓
                             </p>
                         {:else if error && error.dogId === d.dogId && error.type === 'pee'}
-                            <p class="text-center text-sm text-red-400 font-medium">
+                            <p class="text-center text-xs text-red-400 font-medium">
                                 {error.message}
                             </p>
                         {:else}
-                            <p class="text-center text-sm text-zinc-500">
+                            <p class="text-center text-xs text-zinc-500">
                                 {fmt(d.lastPee)}
                             </p>
                         {/if}
                     </div>
 
                     <!-- Poo -->
-                    <div class="space-y-1">
+                    <div class="flex flex-col gap-1">
                         <button
-                            class="w-full rounded-2xl bg-amber-500/20 py-4 text-lg font-semibold active:scale-95"
+                            class="w-full rounded-2xl bg-amber-500/20 py-3 text-base font-semibold active:scale-95"
                             on:click={() => log(d.dogId, 'poo')}
                         >
                             💩 Poo
                         </button>
                         {#if success && success.dogId === d.dogId && success.type === 'poo'}
-                            <p class="text-center text-sm text-emerald-400 font-medium">
+                            <p class="text-center text-xs text-emerald-400 font-medium">
                                 Logged ✓
                             </p>
                         {:else if error && error.dogId === d.dogId && error.type === 'poo'}
-                            <p class="text-center text-sm text-red-400 font-medium">
+                            <p class="text-center text-xs text-red-400 font-medium">
                                 {error.message}
                             </p>
                         {:else}
-                            <p class="text-center text-sm text-zinc-500">
+                            <p class="text-center text-xs text-zinc-500">
                                 {fmt(d.lastPoo)}
                             </p>
                         {/if}
                     </div>
 
                     <!-- Eat -->
-                    <div class="space-y-1">
+                    <div class="flex flex-col gap-1">
                         <button
-                            class="w-full rounded-2xl bg-emerald-500/20 py-4 text-lg font-semibold active:scale-95"
+                            class="w-full rounded-2xl bg-emerald-500/20 py-3 text-base font-semibold active:scale-95"
                             on:click={() => log(d.dogId, 'eat')}
                         >
                             🥣 Eat
                         </button>
                         {#if success && success.dogId === d.dogId && success.type === 'eat'}
-                            <p class="text-center text-sm text-emerald-400 font-medium">
+                            <p class="text-center text-xs text-emerald-400 font-medium">
                                 Logged ✓
                             </p>
                         {:else if error && error.dogId === d.dogId && error.type === 'eat'}
-                            <p class="text-center text-sm text-red-400 font-medium">
+                            <p class="text-center text-xs text-red-400 font-medium">
                                 {error.message}
                             </p>
                         {:else}
-                            <p class="text-center text-sm text-zinc-500">
+                            <p class="text-center text-xs text-zinc-500">
                                 {fmt(d.lastEat)}
                             </p>
                         {/if}
