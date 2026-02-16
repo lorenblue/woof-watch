@@ -53,8 +53,12 @@ model Session {
   id        String   @id @default(cuid())
   actorId   String
   actor     Actor    @relation(fields: [actorId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
   expiresAt DateTime
+
+  userAgent String?
+  ipAddress String?
 
   @@index([actorId])
 }
