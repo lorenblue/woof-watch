@@ -5,8 +5,7 @@ import { isActionType } from '$lib/shared/types';
 import type { CreateEventRequest, CreateEventResponse, ActionType } from '$lib/shared/types';
 
 export async function POST({ request, cookies }) {
-    const actor = await requireActor(cookies.get('actorId') ?? undefined);
-
+	  const actor = await requireActor(cookies.get('sessionId') ?? undefined);
 	  const body = (await request.json().catch(() => null)) as Partial<CreateEventRequest> | null;
 	  const dogId = body?.dogId?.trim();
 	  const actionType = body?.actionType as ActionType | undefined;
