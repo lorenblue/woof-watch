@@ -146,7 +146,7 @@
                         </button>
                         {#if success && success.dogId === d.dogId && success.type === 'pee'}
                             <p class="text-center text-xs text-emerald-400 font-medium">
-                                Logged ✓
+                                Logged
                             </p>
                         {:else if error && error.dogId === d.dogId && error.type === 'pee'}
                             <p class="text-center text-xs text-red-400 font-medium">
@@ -169,7 +169,7 @@
                         </button>
                         {#if success && success.dogId === d.dogId && success.type === 'poo'}
                             <p class="text-center text-xs text-emerald-400 font-medium">
-                                Logged ✓
+                                Logged
                             </p>
                         {:else if error && error.dogId === d.dogId && error.type === 'poo'}
                             <p class="text-center text-xs text-red-400 font-medium">
@@ -192,7 +192,7 @@
                         </button>
                         {#if success && success.dogId === d.dogId && success.type === 'eat'}
                             <p class="text-center text-xs text-emerald-400 font-medium">
-                                Logged ✓
+                                Logged
                             </p>
                         {:else if error && error.dogId === d.dogId && error.type === 'eat'}
                             <p class="text-center text-xs text-red-400 font-medium">
