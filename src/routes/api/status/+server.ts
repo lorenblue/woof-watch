@@ -1,14 +1,11 @@
 import { json } from '@sveltejs/kit';
 import { prisma } from '$lib/server/prisma';
 import { Prisma } from '@prisma/client';
-import type { ActionType, DogStatus, LastEvt, StatusResponse } from '$lib/shared/types';
-
-// Latest row per (dogId, actionType) via SQL window function.
-// SQLite supports ROW_NUMBER() OVER (PARTITION BY ... ORDER BY ...).
+import type { DogStatus, LastEvt, StatusResponse } from '$lib/shared/types';
 
 type LatestRow = {
 	dogId: string;
-	actionType: ActionType;
+	actionType: string;
 	occurredAt: string; // SQLite returns text; we normalize to ISO
 	actorName: string;
 };
@@ -21,35 +18,35 @@ function toLastEvt(row?: LatestRow): LastEvt {
 export async function GET() {
 	// Always include both dogs in the response.
 	const dogs = await prisma.dog.findMany({ orderBy: { name: 'asc' } });
-	const dogIds = dogs.map((d) => d.id);
-
 	// If no dogs, return empty payload.
-	if (dogIds.length === 0) {
+	if (dogs.length === 0) {
 		const payload: StatusResponse = { dogs: [] };
 		return json(payload);
 	}
 
 	const rows = await prisma.$queryRaw<LatestRow[]>(Prisma.sql`
-		WITH ranked AS (
-			SELECT
-				e.dogId AS dogId,
-				t.key AS actionType,
-				e.occurredAt AS occurredAt,
-				a.name AS actorName,
-				ROW_NUMBER() OVER (
-					PARTITION BY e.dogId, e.actionTypeId
-					ORDER BY e.occurredAt DESC
-				) AS rn
-			FROM DogEvent e
-			JOIN Actor a ON a.id = e.actorId
-			JOIN ActionType t ON t.id = e.actionTypeId
-			WHERE e.undoneAt IS NULL
-			  AND e.dogId IN (${Prisma.join(dogIds)})
-			  AND t.key IN ('pee','poo','eat')
-		)
-		SELECT dogId, actionType, occurredAt, actorName
-		FROM ranked
-		WHERE rn = 1;
+		WITH latest AS (
+				SELECT
+					e.dogId AS dogId,
+					e.actionTypeId AS actionTypeId,
+					MAX(e.occurredAt) AS occurredAt
+				FROM DogEvent e
+				WHERE e.undoneAt IS NULL
+				GROUP BY e.dogId, e.actionTypeId
+			)
+		SELECT
+			l.dogId AS dogId,
+			t.key AS actionType,
+			e.occurredAt AS occurredAt,
+			a.name AS actorName
+		FROM latest l
+		JOIN DogEvent e
+			ON e.dogId = l.dogId
+			AND e.actionTypeId = l.actionTypeId
+			AND e.occurredAt = l.occurredAt
+			AND e.undoneAt IS NULL
+		JOIN Actor a ON a.id = e.actorId
+		JOIN ActionType t ON t.id = e.actionTypeId;
 	`);
 
 	const byKey = new Map<string, LatestRow>();
