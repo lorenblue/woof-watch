@@ -3,6 +3,7 @@
     import type { StatusResponse, DogStatus, LastEvt, ActionType } from '$lib/shared/types';
     import humanizeDuration from "humanize-duration";
     import "ios-vibrator-pro-max";
+    import ActionButton from '$lib/components/ActionButton.svelte';
     
     export let data: { actorName: string | null };
 
@@ -22,8 +23,6 @@
     });
 
     let dogs: DogStatus[] = [];
-    let success: { dogId: string; type: ActionType } | null = null;
-    let error: { dogId: string; type: ActionType; message: string } | null = null;
 
     async function refresh() {
         const res = await fetch('/api/status');
@@ -58,9 +57,6 @@
     };
 
     async function log(dogId: string, actionType: ActionType) {
-        success = null;
-        error = null;
-
         try {
             const res = await fetch('/api/events', {
                 method: 'POST',
@@ -77,22 +73,16 @@
                     if (body?.message) message = body.message;
                 } catch {}
 
-                error = { dogId, type: actionType, message };
-                setTimeout(() => error = null, 2500);
-                return;
+                return { ok: false as const, message };
             }
-
-            success = { dogId, type: actionType };
 
             haptics[actionType]();
 
-            await refresh();
-            setTimeout(() => success = null, 1500);
+            void refresh();
+            return { ok: true as const };
         } catch {
             haptics.error();
-
-            error = { dogId, type: actionType, message: 'Network error' };
-            setTimeout(() => error = null, 2500);
+            return { ok: false as const, message: 'Network error' };
         }
     }
 
@@ -136,74 +126,38 @@
 
                 <div class="flex flex-col gap-4">
 
-                    <!-- Pee -->
-                    <div class="flex flex-col gap-1">
-                        <button
-                            class="w-full rounded-2xl bg-sky-500/20 py-3 text-base font-semibold active:scale-95"
-                            on:click={() => log(d.dogId, 'pee')}
-                        >
-                            💦 Pee
-                        </button>
-                        {#if success && success.dogId === d.dogId && success.type === 'pee'}
-                            <p class="text-center text-xs text-emerald-400 font-medium">
-                                Logged
-                            </p>
-                        {:else if error && error.dogId === d.dogId && error.type === 'pee'}
-                            <p class="text-center text-xs text-red-400 font-medium">
-                                {error.message}
-                            </p>
-                        {:else}
-                            <p class="text-center text-xs text-zinc-500">
-                                {fmt(d.lastPee)}
-                            </p>
-                        {/if}
-                    </div>
+                    <ActionButton
+                        dogId={d.dogId}
+                        actionType="pee"
+                        label="Pee"
+                        icon="💦"
+                        toneClass="bg-sky-500/20"
+                        lastEvent={d.lastPee}
+                        formatEvent={fmt}
+                        onLog={log}
+                    />
 
-                    <!-- Poo -->
-                    <div class="flex flex-col gap-1">
-                        <button
-                            class="w-full rounded-2xl bg-amber-500/20 py-3 text-base font-semibold active:scale-95"
-                            on:click={() => log(d.dogId, 'poo')}
-                        >
-                            💩 Poo
-                        </button>
-                        {#if success && success.dogId === d.dogId && success.type === 'poo'}
-                            <p class="text-center text-xs text-emerald-400 font-medium">
-                                Logged
-                            </p>
-                        {:else if error && error.dogId === d.dogId && error.type === 'poo'}
-                            <p class="text-center text-xs text-red-400 font-medium">
-                                {error.message}
-                            </p>
-                        {:else}
-                            <p class="text-center text-xs text-zinc-500">
-                                {fmt(d.lastPoo)}
-                            </p>
-                        {/if}
-                    </div>
+                    <ActionButton
+                        dogId={d.dogId}
+                        actionType="poo"
+                        label="Poo"
+                        icon="💩"
+                        toneClass="bg-amber-500/20"
+                        lastEvent={d.lastPoo}
+                        formatEvent={fmt}
+                        onLog={log}
+                    />
 
-                    <!-- Eat -->
-                    <div class="flex flex-col gap-1">
-                        <button
-                            class="w-full rounded-2xl bg-emerald-500/20 py-3 text-base font-semibold active:scale-95"
-                            on:click={() => log(d.dogId, 'eat')}
-                        >
-                            🥣 Eat
-                        </button>
-                        {#if success && success.dogId === d.dogId && success.type === 'eat'}
-                            <p class="text-center text-xs text-emerald-400 font-medium">
-                                Logged
-                            </p>
-                        {:else if error && error.dogId === d.dogId && error.type === 'eat'}
-                            <p class="text-center text-xs text-red-400 font-medium">
-                                {error.message}
-                            </p>
-                        {:else}
-                            <p class="text-center text-xs text-zinc-500">
-                                {fmt(d.lastEat)}
-                            </p>
-                        {/if}
-                    </div>
+                    <ActionButton
+                        dogId={d.dogId}
+                        actionType="eat"
+                        label="Eat"
+                        icon="🥣"
+                        toneClass="bg-emerald-500/20"
+                        lastEvent={d.lastEat}
+                        formatEvent={fmt}
+                        onLog={log}
+                    />
 
                 </div>
             </div>
