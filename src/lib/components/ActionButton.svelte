@@ -6,17 +6,29 @@
         | { ok: true }
         | { ok: false; message: string };
     type Message = { text: string; className: string } | null;
+    type Props = {
+        dogId: string;
+        actionType: ActionType;
+        label: string;
+        icon: string;
+        toneClass: string;
+        lastEvent: LastEvt;
+        formatEvent: (evt: LastEvt) => string;
+        onLog: (dogId: string, actionType: ActionType) => Promise<ActionLogResult>;
+    };
 
-    export let dogId: string;
-    export let actionType: ActionType;
-    export let label: string;
-    export let icon: string;
-    export let toneClass: string;
-    export let lastEvent: LastEvt;
-    export let formatEvent: (evt: LastEvt) => string;
-    export let onLog: (dogId: string, actionType: ActionType) => Promise<ActionLogResult>;
+    let {
+        dogId,
+        actionType,
+        label,
+        icon,
+        toneClass,
+        lastEvent,
+        formatEvent,
+        onLog
+    }: Props = $props();
 
-    let message: Message = null;
+    let message = $state<Message>(null);
     let messageTimer: ReturnType<typeof setTimeout> | null = null;
 
     function showMessage(text: string, className: string, ttlMs: number) {
@@ -49,7 +61,7 @@
 <div class="flex flex-col gap-1">
     <button
         class={`w-full rounded-2xl py-3 text-base font-semibold active:scale-95 ${toneClass}`}
-        on:click={handleClick}
+        onclick={handleClick}
     >
         {icon} {label}
     </button>

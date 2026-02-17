@@ -4,8 +4,11 @@
     import humanizeDuration from "humanize-duration";
     import "ios-vibrator-pro-max";
     import ActionButton from '$lib/components/ActionButton.svelte';
-    
-    export let data: { actorName: string | null };
+
+    type Props = {
+        data: { actorName: string | null };
+    };
+    let { data }: Props = $props();
 
     const humanizer = humanizeDuration.humanizer({
         round: true,
@@ -22,7 +25,7 @@
         delimiter: " "
     });
 
-    let dogs: DogStatus[] = [];
+    let dogs = $state<DogStatus[]>([]);
 
     async function refresh() {
         const res = await fetch('/api/status');
