@@ -1,0 +1,2 @@
+-- No-op migration placeholder.
+-- This migration directory must contain migration.sql for Prisma to run migrate commands.

@@ -6,12 +6,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-enum ActionType {
-  pee
-  poo
-  eat
-}
-
 model Actor {
   id         String    @id @default(cuid())
   name       String    @unique
@@ -31,28 +25,36 @@ model Dog {
   events DogEvent[]
 }
 
+model ActionType {
+  id  String @id @default(cuid())
+  key String @unique
+
+  events DogEvent[]
+}
+
 model DogEvent {
-  id         String     @id @default(cuid())
-  dogId      String
-  actionType ActionType
-  occurredAt DateTime   @default(now())
-  recordedAt DateTime   @default(now())
-  actorId    String
+  id           String   @id @default(cuid())
+  dogId        String
+  actionTypeId String
+  occurredAt   DateTime @default(now())
+  recordedAt   DateTime @default(now())
+  actorId      String
 
   undoneAt   DateTime?
   undoneById String?
 
-  dog   Dog   @relation(fields: [dogId], references: [id])
-  actor Actor @relation(fields: [actorId], references: [id])
+  dog        Dog        @relation(fields: [dogId], references: [id])
+  actionType ActionType @relation(fields: [actionTypeId], references: [id])
+  actor      Actor      @relation(fields: [actorId], references: [id])
 
-  @@index([dogId, actionType, occurredAt])
+  @@index([dogId, actionTypeId, occurredAt])
   @@index([actorId, recordedAt])
 }
 
 model Session {
-  id        String   @id @default(cuid())
-  actorId   String
-  actor     Actor    @relation(fields: [actorId], references: [id], onDelete: Cascade)
+  id      String @id @default(cuid())
+  actorId String
+  actor   Actor  @relation(fields: [actorId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   expiresAt DateTime

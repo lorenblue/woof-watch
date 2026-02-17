@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { prisma } from '$lib/server/prisma';
+import { ACTION_TYPES } from '$lib/shared/types';
 
 export async function POST() {
     const dogs = [
@@ -18,6 +19,10 @@ export async function POST() {
 
     for (const a of actors) {
         await prisma.actor.upsert({ where: { name: a.name }, update: { code: a.code }, create: a });
+    }
+
+    for (const key of ACTION_TYPES) {
+        await prisma.actionType.upsert({ where: { key }, update: {}, create: { key } });
     }
 
     return json({ ok: true, dogs, actors });

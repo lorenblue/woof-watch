@@ -33,18 +33,19 @@ export async function GET() {
 		WITH ranked AS (
 			SELECT
 				e.dogId AS dogId,
-				e.actionType AS actionType,
+				t.key AS actionType,
 				e.occurredAt AS occurredAt,
 				a.name AS actorName,
 				ROW_NUMBER() OVER (
-					PARTITION BY e.dogId, e.actionType
+					PARTITION BY e.dogId, e.actionTypeId
 					ORDER BY e.occurredAt DESC
 				) AS rn
 			FROM DogEvent e
 			JOIN Actor a ON a.id = e.actorId
+			JOIN ActionType t ON t.id = e.actionTypeId
 			WHERE e.undoneAt IS NULL
 			  AND e.dogId IN (${Prisma.join(dogIds)})
-			  AND e.actionType IN ('pee','poo','eat')
+			  AND t.key IN ('pee','poo','eat')
 		)
 		SELECT dogId, actionType, occurredAt, actorName
 		FROM ranked
