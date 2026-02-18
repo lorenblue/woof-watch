@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onDestroy } from 'svelte';
+    import { successSound, failureSound } from '$lib/sounds';
     import type { ActionType, LastEvt } from '$lib/shared/types';
 
     type ActionLogResult =
@@ -47,9 +48,11 @@
     async function handleClick() {
         const result = await onLog(dogId, actionType);
         if (result.ok) {
+            successSound.play();
             showMessage('Logged', 'text-emerald-400', 1500);
             return;
         }
+        failureSound.play();
         showMessage(result.message, 'text-red-400', 2500);
     }
 
