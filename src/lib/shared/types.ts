@@ -8,6 +8,7 @@ export function isActionType(x: unknown): x is ActionType {
 export type LastEvt = {
 	at: string; // ISO string
 	by: string;
+	id: string;
 } | null;
 
 export type DogStatus = {

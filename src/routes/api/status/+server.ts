@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import type { DogStatus, LastEvt, StatusResponse } from '$lib/shared/types';
 
 type LatestRow = {
+	eventId: string;
 	dogId: string;
 	actionType: string;
 	occurredAt: string; // SQLite returns text; we normalize to ISO
@@ -12,7 +13,11 @@ type LatestRow = {
 
 function toLastEvt(row?: LatestRow): LastEvt {
 	if (!row) return null;
-	return { at: new Date(row.occurredAt).toISOString(), by: row.actorName };
+	return { 
+		at: new Date(row.occurredAt).toISOString(), 
+		by: row.actorName,
+		id: row.eventId,
+	};
 }
 
 export async function GET() {
@@ -35,6 +40,7 @@ export async function GET() {
 				GROUP BY e.dogId, e.actionTypeId
 			)
 		SELECT
+			e.id AS eventId,
 			l.dogId AS dogId,
 			t.key AS actionType,
 			e.occurredAt AS occurredAt,
