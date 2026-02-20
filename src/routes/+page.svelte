@@ -26,11 +26,18 @@
     });
 
     let dogs = $state<DogStatus[]>([]);
+    let isRefreshing = false;
 
     async function refresh() {
-        const res = await fetch('/api/status');
-        const data: StatusResponse = await res.json();
-        dogs = data.dogs;
+        if (isRefreshing) return;
+        isRefreshing = true;
+        try {
+            const res = await fetch('/api/status');
+            const data: StatusResponse = await res.json();
+            dogs = data.dogs;
+        } finally {
+            isRefreshing = false;
+        }
     }
 
     function fmt(evt: LastEvt) {
@@ -99,9 +106,13 @@
         };
 
         document.addEventListener('visibilitychange', handler);
+        window.addEventListener('focus', handler);
+        window.addEventListener('pageshow', handler);
 
         return () => {
             document.removeEventListener('visibilitychange', handler);
+            window.removeEventListener('focus', handler);
+            window.removeEventListener('pageshow', handler);
         };
     });
 </script>
