@@ -1,120 +1,101 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
-    import type { StatusResponse, DogStatus, LastEvt, ActionType } from '$lib/shared/types';
-    import humanizeDuration from "humanize-duration";
-    import "ios-vibrator-pro-max";
-    import ActionButton from '$lib/components/ActionButton.svelte';
+  import { onMount } from 'svelte';
+  import type { DogStatus, ActionType, LastEvt } from '$lib/shared/types';
+  import { getStatus, logEvent } from '$lib/api/client';
+  import humanizeDuration from "humanize-duration";
+  import "ios-vibrator-pro-max";
+  import ActionButton from '$lib/components/ActionButton.svelte';
 
-    type Props = {
-        data: { actorName: string | null };
-    };
-    let { data }: Props = $props();
+  type Props = {
+    data: { actorName: string | null };
+  };
 
-    const humanizer = humanizeDuration.humanizer({
-        round: true,
-        spacer: "",
-        language: "short",
-        languages: {
-            short: {
-                h: () => "h",
-                m: () => "m",
-            },
-        },
-        units: ["h", "m"],
-	    largest: 1,
-        delimiter: " "
-    });
+  let { data }: Props = $props();
 
-    let dogs = $state<DogStatus[]>([]);
-    let isRefreshing = false;
+  let dogs = $state<DogStatus[]>([]);
+  let isRefreshing = false;
 
-    async function refresh() {
-        if (isRefreshing) return;
-        isRefreshing = true;
-        try {
-            const res = await fetch('/api/status');
-            const data: StatusResponse = await res.json();
-            dogs = data.dogs;
-        } finally {
-            isRefreshing = false;
-        }
+  const humanizer = humanizeDuration.humanizer({
+    round: true,
+    spacer: "",
+    language: "short",
+    languages: {
+      short: {
+        h: () => "h",
+        m: () => "m",
+      },
+    },
+    units: ["h", "m"],
+    largest: 1,
+    delimiter: " "
+  });
+
+  async function refresh() {
+    if (isRefreshing) return;
+    isRefreshing = true;
+
+    try {
+      const result = await getStatus();
+      dogs = result.dogs;
+    } catch (err) {
+      console.error(err);
+    } finally {
+      isRefreshing = false;
     }
+  }
 
-    function fmt(evt: LastEvt) {
-        if (!evt) return '—';
+  function fmt(evt: LastEvt) {
+    if (!evt) return '—';
 
-        const at = new Date(evt.at);
-        const diffMs = Date.now() - at.getTime();
+    const at = new Date(evt.at);
+    const diffMs = Date.now() - at.getTime();
 
-        return diffMs < 60 * 1000 
-	        ? `Just now • ${evt.by}` 
-	        : `${humanizer(diffMs)} ago • ${evt.by}`;
+    return diffMs < 60 * 1000
+      ? `Just now • ${evt.by}`
+      : `${humanizer(diffMs)} ago • ${evt.by}`;
+  }
+
+  const haptics = {
+    pee() { navigator.vibrate?.([20]); },
+    poo() { navigator.vibrate?.([20, 200, 20]); },
+    eat() { navigator.vibrate?.([20, 200, 20, 200, 20]); },
+    error() { navigator.vibrate?.([300]); }
+  };
+
+  async function log(dogId: string, actionType: ActionType) {
+    try {
+      await logEvent(dogId, actionType);
+
+      haptics[actionType]();
+
+      void refresh();
+
+      return { ok: true as const };
+    } catch (err: any) {
+      haptics.error();
+      return { ok: false as const, message: err.message };
     }
+  }
 
-    const haptics = {
-        pee() {
-            navigator.vibrate?.([20]);
-        },
-        poo() {
-            navigator.vibrate?.([20, 200, 20]);
-        },
-        eat() {
-            navigator.vibrate?.([20, 200, 20, 200, 20]);
-        },
-        error() {
-            navigator.vibrate?.([300]);
-        }
-    };
+  onMount(() => {
+    refresh();
 
-    async function log(dogId: string, actionType: ActionType) {
-        try {
-            const res = await fetch('/api/events', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ dogId, actionType })
-            });
-
-            if (!res.ok) {
-                haptics.error();
-
-                let message = 'Failed';
-                try {
-                    const body = await res.json();
-                    if (body?.message) message = body.message;
-                } catch {}
-
-                return { ok: false as const, message };
-            }
-
-            haptics[actionType]();
-
-            void refresh();
-            return { ok: true as const };
-        } catch {
-            haptics.error();
-            return { ok: false as const, message: 'Network error' };
-        }
-    }
-
-    onMount(() => {
+    const handler = () => {
+      if (document.visibilityState === 'visible') {
         refresh();
+      }
+    };
 
-        const handler = () => {
-            if (document.visibilityState === 'visible') {
-                refresh();
-            }
-        };
+    document.addEventListener('visibilitychange', handler);
+    window.addEventListener('focus', handler);
+    window.addEventListener('pageshow', handler);
 
-        document.addEventListener('visibilitychange', handler);
-        window.addEventListener('focus', handler);
-        window.addEventListener('pageshow', handler);
-
-        return () => {
-            document.removeEventListener('visibilitychange', handler);
-            window.removeEventListener('focus', handler);
-            window.removeEventListener('pageshow', handler);
-        };
-    });
+    return () => {
+      document.removeEventListener('visibilitychange', handler);
+      window.removeEventListener('focus', handler);
+      window.removeEventListener('pageshow', handler);
+    };
+  });
 </script>
 
 <main class="h-dvh bg-black text-zinc-100 flex flex-col">
