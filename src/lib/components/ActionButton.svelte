@@ -31,6 +31,7 @@
 
     let message = $state<Message>(null);
     let messageTimer: ReturnType<typeof setTimeout> | null = null;
+    let isLoading = $state(false);
 
     function showMessage(text: string, className: string, ttlMs: number) {
         if (messageTimer) {
@@ -46,14 +47,20 @@
     }
 
     async function handleClick() {
-        const result = await onLog(dogId, actionType);
-        if (result.ok) {
-            successSound.play();
-            showMessage('Logged', 'text-emerald-400', 1500);
-            return;
+        if (isLoading) return;
+        isLoading = true;
+        try {
+            const result = await onLog(dogId, actionType);
+            if (result.ok) {
+                successSound.play();
+                showMessage('Logged', 'text-emerald-400', 1500);
+                return;
+            }
+            failureSound.play();
+            showMessage(result.message, 'text-red-400', 2500);
+        } finally {
+            isLoading = false;
         }
-        failureSound.play();
-        showMessage(result.message, 'text-red-400', 2500);
     }
 
     onDestroy(() => {
@@ -65,6 +72,7 @@
     <button
         class={`w-full rounded-2xl py-3 text-base font-semibold active:scale-95 ${toneClass}`}
         onclick={handleClick}
+        disabled={isLoading}
     >
         {icon} {label}
     </button>
