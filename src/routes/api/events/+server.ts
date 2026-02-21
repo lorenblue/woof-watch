@@ -19,7 +19,8 @@ export async function POST({ request, cookies }) {
 	const mostRecentEvt = await prisma.dogEvent.findFirst({
 		where: {
 			dogId,
-			actionTypeId: actionTypeRow.id
+			actionTypeId: actionTypeRow.id,
+			undoneAt: null
 		},
 		orderBy: {
 			occurredAt: 'desc'
