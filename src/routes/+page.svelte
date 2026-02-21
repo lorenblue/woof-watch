@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import type { DogStatus, ActionType, LastEvt } from '$lib/shared/types';
-  import { getStatus, logEvent } from '$lib/api/client';
+  import { getStatus, logEvent, undoEvent } from '$lib/api/client';
   import humanizeDuration from "humanize-duration";
   import "ios-vibrator-pro-max";
   import ActionButton from '$lib/components/ActionButton.svelte';
@@ -76,6 +76,16 @@
       return { ok: false as const, message: err.message };
     }
   }
+  
+  async function undo(eventId: string){
+    try {
+      await undoEvent(eventId);
+      void refresh();
+      return { ok: true as const };
+    } catch (err: any) {
+      return { ok: false as const, message: err.message };
+    }
+  }
 
   onMount(() => {
     refresh();
@@ -130,6 +140,7 @@
                         lastEvent={d.lastPee}
                         formatEvent={fmt}
                         onLog={log}
+                        onUndo={undo}
                     />
 
                     <ActionButton
@@ -141,6 +152,7 @@
                         lastEvent={d.lastPoo}
                         formatEvent={fmt}
                         onLog={log}
+                        onUndo={undo}
                     />
 
                     <ActionButton
@@ -152,6 +164,7 @@
                         lastEvent={d.lastEat}
                         formatEvent={fmt}
                         onLog={log}
+                        onUndo={undo}
                     />
 
                 </div>
