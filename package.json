@@ -30,7 +30,7 @@
 		"prettier": "^3.8.1",
 		"prettier-plugin-svelte": "^3.4.1",
 		"prettier-plugin-tailwindcss": "^0.7.2",
-		"prisma": "^7.4.0",
+		"prisma": "^7.4.1",
 		"svelte": "^5.49.2",
 		"svelte-check": "^4.3.6",
 		"tailwindcss": "^4.1.18",
@@ -40,7 +40,7 @@
 	},
 	"dependencies": {
 		"@prisma/adapter-better-sqlite3": "^7.4.0",
-		"@prisma/client": "^7.4.0",
+		"@prisma/client": "^7.4.1",
 		"better-sqlite3": "^12.6.2",
 		"howler": "^2.2.4",
 		"humanize-duration": "^3.33.2",
