@@ -7,3 +7,10 @@ const url = env.DATABASE_URL ?? 'file:./dev.db';
 const adapter = new PrismaBetterSqlite3({ url });
 
 export const prisma = new PrismaClient({ adapter });
+
+async function enableWAL() {
+	const result = await prisma.$queryRawUnsafe(`PRAGMA journal_mode = WAL;`);
+	console.log('WAL result:', result);
+}
+
+await enableWAL();
