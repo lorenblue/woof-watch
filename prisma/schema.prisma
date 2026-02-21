@@ -47,8 +47,7 @@ model DogEvent {
   actionType ActionType @relation(fields: [actionTypeId], references: [id])
   actor      Actor      @relation(fields: [actorId], references: [id])
 
-  @@index([dogId, actionTypeId, occurredAt])
-  @@index([actorId, recordedAt])
+  @@index([dogId, actionTypeId, undoneAt, occurredAt(sort: Desc)])
 }
 
 model Session {
