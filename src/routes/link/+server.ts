@@ -10,13 +10,14 @@ export async function GET({ url, cookies, request, getClientAddress }) {
 	const actor = await prisma.actor.findUnique({ where: { code } });
 	if (!actor) throw redirect(302, '/?err=badcode');
 
-	// Mark first activation time if not already set (for tracking only)
-	if (!actor.codeUsedAt) {
-		await prisma.actor.update({
-			where: { id: actor.id },
-			data: { codeUsedAt: now }
-		});
+	if (actor.codeUsedAt) {
+		throw redirect(302, '/?err=codealreadyused');
 	}
+
+	await prisma.actor.update({
+		where: { id: actor.id },
+		data: { codeUsedAt: now }
+	});
 
 	const userAgent = request.headers.get('user-agent') ?? 'unknown';
 	const ipAddress = getClientAddress();
