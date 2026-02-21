@@ -26,3 +26,20 @@ export async function logEvent(dogId: string, actionType: ActionType) {
 		throw new Error(message);
 	}
 }
+
+export async function undoEvent(eventId: string){
+	const res = await fetch('/api/events/undo', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ eventId })
+	});
+
+	if (!res.ok) {
+		let message = 'Failed';
+		try {
+			const body = await res.json();
+			if (body?.message) message = body.message;
+		} catch {}
+		throw new Error(message);
+	}
+}
