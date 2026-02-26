@@ -7,13 +7,17 @@
   import ActionButton from '$lib/components/ActionButton.svelte';
 
   type Props = {
-    data: { actorName: string | null };
+    data: { actorName: string | null; dogs: DogStatus[] };
   };
 
   let { data }: Props = $props();
 
   let dogs = $state<DogStatus[]>([]);
   let isRefreshing = false;
+
+  $effect(() => {
+    dogs = data.dogs;
+  });
 
   const humanizer = humanizeDuration.humanizer({
     round: true,
@@ -88,8 +92,6 @@
   }
 
   onMount(() => {
-    refresh();
-
     const handler = () => {
       if (document.visibilityState === 'visible') {
         refresh();
