@@ -1,42 +1,55 @@
-# sv
+# Woof Watch
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+## Database
 
-## Creating a project
+This project now uses PostgreSQL via Prisma.
 
-If you're seeing this, you've probably already done this step. Congrats!
+Start PostgreSQL locally with Docker:
 
 ```sh
-# create a new project
-npx sv create my-app
+docker compose up -d
 ```
 
-To recreate this project with the same configuration:
+1. Set `DATABASE_URL` (example):
 
 ```sh
-# recreate this project
-npx sv create --template minimal --types ts --add tailwindcss="plugins:none" eslint prettier --install npm woof-watch
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/woof_watch?schema=public"
 ```
 
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+2. Apply the baseline migration:
 
 ```sh
+npx prisma migrate dev
+```
+
+3. Generate Prisma Client:
+
+```sh
+npx prisma generate
+```
+
+Useful Docker commands:
+
+```sh
+docker compose logs -f postgres
+docker compose down
+```
+
+4. (Optional) seed app lookup data/dogs/actors:
+
+```sh
+curl -X POST http://localhost:5173/api/admin/seed
+```
+
+## Development
+
+```sh
+npm install
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
-
-To create a production version of your app:
+## Checks
 
 ```sh
-npm run build
+npm run check
 ```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.

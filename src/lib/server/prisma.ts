@@ -1,16 +1,10 @@
-import { PrismaClient } from '@prisma/client';
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
+import { PrismaPg } from '@prisma/adapter-pg';
 import { env } from '$env/dynamic/private';
+import { PrismaClient } from '../../../generated/prisma/client';
 
-const url = env.DATABASE_URL ?? 'file:./dev.db';
+const connectionString =
+	env.DATABASE_URL ?? 'postgresql://postgres:postgres@localhost:5432/woof_watch?schema=public';
 
-const adapter = new PrismaBetterSqlite3({ url });
+const adapter = new PrismaPg({ connectionString });
 
 export const prisma = new PrismaClient({ adapter });
-
-async function enableWAL() {
-	const result = await prisma.$queryRawUnsafe(`PRAGMA journal_mode = WAL;`);
-	console.log('WAL result:', result);
-}
-
-await enableWAL();

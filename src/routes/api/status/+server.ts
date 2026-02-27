@@ -1,22 +1,21 @@
 import { json } from '@sveltejs/kit';
 import { prisma } from '$lib/server/prisma';
-import { Prisma } from '@prisma/client';
 import type { DogStatus, LastEvt, StatusResponse } from '$lib/shared/types';
 
 type LatestRow = {
 	eventId: string;
 	dogId: string;
 	actionType: string;
-	occurredAt: string; // SQLite returns text; we normalize to ISO
+	occurredAt: string | Date;
 	actorName: string;
 };
 
 function toLastEvt(row?: LatestRow): LastEvt {
 	if (!row) return null;
-	return { 
-		at: new Date(row.occurredAt).toISOString(), 
+	return {
+		at: new Date(row.occurredAt).toISOString(),
 		by: row.actorName,
-		id: row.eventId,
+		id: row.eventId
 	};
 }
 
@@ -29,31 +28,31 @@ export async function GET() {
 		return json(payload);
 	}
 
-	const rows = await prisma.$queryRaw<LatestRow[]>(Prisma.sql`
+	const rows = await prisma.$queryRaw<LatestRow[]>`
 		WITH latest AS (
 				SELECT
-					e.dogId AS dogId,
-					e.actionTypeId AS actionTypeId,
-					MAX(e.occurredAt) AS occurredAt
-				FROM DogEvent e
-				WHERE e.undoneAt IS NULL
-				GROUP BY e.dogId, e.actionTypeId
+					e."dogId" AS "dogId",
+					e."actionTypeId" AS "actionTypeId",
+					MAX(e."occurredAt") AS "occurredAt"
+				FROM "DogEvent" e
+				WHERE e."undoneAt" IS NULL
+				GROUP BY e."dogId", e."actionTypeId"
 			)
 		SELECT
-			e.id AS eventId,
-			l.dogId AS dogId,
-			t.key AS actionType,
-			e.occurredAt AS occurredAt,
-			a.name AS actorName
+			e."id" AS "eventId",
+			l."dogId" AS "dogId",
+			t."key" AS "actionType",
+			e."occurredAt" AS "occurredAt",
+			a."name" AS "actorName"
 		FROM latest l
-		JOIN DogEvent e
-			ON e.dogId = l.dogId
-			AND e.actionTypeId = l.actionTypeId
-			AND e.occurredAt = l.occurredAt
-			AND e.undoneAt IS NULL
-		JOIN Actor a ON a.id = e.actorId
-		JOIN ActionType t ON t.id = e.actionTypeId;
-	`);
+		JOIN "DogEvent" e
+			ON e."dogId" = l."dogId"
+			AND e."actionTypeId" = l."actionTypeId"
+			AND e."occurredAt" = l."occurredAt"
+			AND e."undoneAt" IS NULL
+		JOIN "Actor" a ON a."id" = e."actorId"
+		JOIN "ActionType" t ON t."id" = e."actionTypeId";
+	`;
 
 	const byKey = new Map<string, LatestRow>();
 	for (const r of rows) byKey.set(`${r.dogId}:${r.actionType}`, r);
