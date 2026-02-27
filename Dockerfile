@@ -1,20 +1,18 @@
-﻿FROM node:20-alpine AS deps
+﻿FROM node:lts-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 COPY prisma ./prisma
 RUN npm ci
 RUN npx prisma generate
 
-FROM node:20-alpine AS builder
+FROM node:lts-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 RUN npm prune --omit=dev
-# Regenerate Prisma client for production
-RUN npx prisma generate
 
-FROM node:20-alpine AS runner
+FROM node:lts-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
@@ -28,4 +26,4 @@ COPY --chown=sveltekit:sveltekit package.json .
 
 USER sveltekit
 EXPOSE 3000
-CMD ["node", "build/index.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node build/index.js"]
