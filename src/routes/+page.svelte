@@ -3,7 +3,6 @@
   import type { DogStatus, ActionType, LastEvt } from '$lib/shared/types';
   import { getStatus, logEvent, undoEvent } from '$lib/api/client';
   import humanizeDuration from "humanize-duration";
-  import "ios-vibrator-pro-max";
   import ActionButton from '$lib/components/ActionButton.svelte';
 
   type Props = {
@@ -92,6 +91,7 @@
   }
 
   onMount(() => {
+    void import('ios-vibrator-pro-max');
     const handler = () => {
       if (document.visibilityState === 'visible') {
         refresh();
