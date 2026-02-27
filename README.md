@@ -4,10 +4,10 @@
 
 This project now uses PostgreSQL via Prisma.
 
-Start PostgreSQL locally with Docker:
+Start PostgreSQL and the app with Docker:
 
 ```sh
-docker compose up -d
+docker compose up -d --build
 ```
 
 1. Set `DATABASE_URL` (example):
@@ -28,9 +28,16 @@ npx prisma migrate dev
 npx prisma generate
 ```
 
+App URL:
+
+```sh
+http://localhost:3000
+```
+
 Useful Docker commands:
 
 ```sh
+docker compose logs -f app
 docker compose logs -f postgres
 docker compose down
 ```

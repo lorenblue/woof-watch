@@ -17,5 +17,19 @@ services:
       timeout: 5s
       retries: 10
 
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: woof-watch-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/woof_watch?schema=public
+    ports:
+      - "3000:3000"
+
 volumes:
   postgres_data:
