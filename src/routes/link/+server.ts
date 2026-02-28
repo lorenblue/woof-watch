@@ -1,5 +1,6 @@
 import { prisma } from '$lib/server/prisma';
 import { redirect } from '@sveltejs/kit';
+import { getSessionExpiryDate, setSessionCookie } from '$lib/server/auth';
 
 export async function GET({ url, cookies, request, getClientAddress }) {
 	const code = url.searchParams.get('code')?.trim();
@@ -25,19 +26,12 @@ export async function GET({ url, cookies, request, getClientAddress }) {
 	const session = await prisma.session.create({
 		data: {
 			actorId: actor.id,
-			expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+			expiresAt: getSessionExpiryDate(),
 			userAgent,
 			ipAddress
 		}
 	});
 
-	cookies.set('sessionId', session.id, {
-		path: '/',
-		httpOnly: true,
-		sameSite: 'lax',
-		secure: false, // true in prod
-		maxAge: 60 * 60 * 24 * 365
-	});
-
+	setSessionCookie(cookies, session.id);
 	throw redirect(302, '/');
 }
