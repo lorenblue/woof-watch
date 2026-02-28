@@ -4,6 +4,7 @@ import pg from 'pg';
 import { PrismaClient } from './generated/client';
 
 import { PrismaPg } from '@prisma/adapter-pg';
+import crypto from 'crypto';
 
 const pool = new pg.Pool({
 	connectionString: process.env.DATABASE_URL
@@ -12,10 +13,10 @@ const pool = new pg.Pool({
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
-import crypto from 'crypto';
+const ADMIN_NAME = process.env.ADMIN_NAME;
 
 function generateCode() {
-	return crypto.randomBytes(8).toString('base64url');
+	return crypto.randomBytes(16).toString('base64url');
 }
 
 async function createActorIfMissing(name: string) {
@@ -30,7 +31,8 @@ async function createActorIfMissing(name: string) {
 			data: {
 				name,
 				code,
-				used: false
+				codeUsedAt: null,
+				role: name === ADMIN_NAME ? 'ADMIN' : 'USER'
 			}
 		});
 
