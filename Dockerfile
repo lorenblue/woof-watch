@@ -3,7 +3,6 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY prisma ./prisma
 RUN npm ci
-RUN npx prisma generate
 
 FROM node:lts-alpine AS builder
 WORKDIR /app
@@ -26,4 +25,4 @@ COPY --chown=sveltekit:sveltekit package.json .
 
 USER sveltekit
 EXPOSE 3000
-CMD ["sh", "-c", "npx prisma migrate deploy && node build/index.js"]
+CMD ["sh", "-c", "npx prisma generate && npx prisma migrate deploy && node build/index.js"]
