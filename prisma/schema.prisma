@@ -15,7 +15,7 @@ enum Role {
 model Actor {
   id         String    @id @default(cuid())
   name       String    @unique
-  code       String    @unique
+  code       String?   @unique
   codeUsedAt DateTime?
   createdAt  DateTime  @default(now())
 
