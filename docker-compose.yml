@@ -26,6 +26,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
+      DEFAULT_ACTORS: ${DEFAULT_ACTORS}
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
     ports:
       - "3000:3000"
