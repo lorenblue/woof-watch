@@ -19,9 +19,8 @@ services:
       - internal 
 
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/lorenblue/woof-watch:latest
+    pull_policy: always
     container_name: woof-watch-app
     restart: unless-stopped
     depends_on:
