@@ -11,8 +11,6 @@ const pool = new pg.Pool({
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
-const ADMIN_NAME = process.env.ADMIN_NAME;
-
 async function createActorIfMissing(name: string) {
 	const existing = await prisma.actor.findUnique({
 		where: { name }
@@ -24,7 +22,6 @@ async function createActorIfMissing(name: string) {
 				name,
 				code: null,
 				codeUsedAt: null,
-				role: name === ADMIN_NAME ? 'ADMIN' : 'USER'
 			}
 		});
 	}

@@ -19,8 +19,6 @@ model Actor {
   codeUsedAt DateTime?
   createdAt  DateTime  @default(now())
 
-  role Role @default(USER)
-
   events   DogEvent[]
   pushes   PushSubscription[]
   sessions Session[]
