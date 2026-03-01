@@ -30,14 +30,14 @@ export async function GET() {
 
 	const rows = await prisma.$queryRaw<LatestRow[]>`
 		WITH latest AS (
-				SELECT
-					e."dogId" AS "dogId",
-					e."actionTypeId" AS "actionTypeId",
-					MAX(e."occurredAt") AS "occurredAt"
-				FROM "DogEvent" e
-				WHERE e."undoneAt" IS NULL
-				GROUP BY e."dogId", e."actionTypeId"
-			)
+			SELECT
+				e."dogId" AS "dogId",
+				e."actionTypeId" AS "actionTypeId",
+				MAX(e."occurredAt") AS "occurredAt"
+			FROM dog_event e
+			WHERE e."undoneAt" IS NULL
+			GROUP BY e."dogId", e."actionTypeId"
+		)
 		SELECT
 			e."id" AS "eventId",
 			l."dogId" AS "dogId",
@@ -45,13 +45,13 @@ export async function GET() {
 			e."occurredAt" AS "occurredAt",
 			a."name" AS "actorName"
 		FROM latest l
-		JOIN "DogEvent" e
+		JOIN dog_event e
 			ON e."dogId" = l."dogId"
 			AND e."actionTypeId" = l."actionTypeId"
 			AND e."occurredAt" = l."occurredAt"
 			AND e."undoneAt" IS NULL
-		JOIN "Actor" a ON a."id" = e."actorId"
-		JOIN "ActionType" t ON t."key" = e."actionTypeId";
+		JOIN actor a ON a."id" = e."actorId"
+		JOIN action_type t ON t."key" = e."actionTypeId";
 	`;
 
 	const byKey = new Map<string, LatestRow>();
