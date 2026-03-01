@@ -19,7 +19,7 @@ export async function POST({ request, cookies }) {
 	const mostRecentEvt = await prisma.dogEvent.findFirst({
 		where: {
 			dogId,
-			actionTypeId: actionTypeRow.id,
+			actionTypeId: actionTypeRow.key,
 			undoneAt: null
 		},
 		orderBy: {
@@ -39,7 +39,7 @@ export async function POST({ request, cookies }) {
 	}
 
 	const evt = await prisma.dogEvent.create({
-		data: { dogId, actionTypeId: actionTypeRow.id, actorId: actor.id }
+		data: { dogId, actionTypeId: actionTypeRow.key, actorId: actor.id }
 	});
 
 	const payload: CreateEventResponse = { ok: true, eventId: evt.id };

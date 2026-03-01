@@ -51,7 +51,7 @@ export async function GET() {
 			AND e."occurredAt" = l."occurredAt"
 			AND e."undoneAt" IS NULL
 		JOIN "Actor" a ON a."id" = e."actorId"
-		JOIN "ActionType" t ON t."id" = e."actionTypeId";
+		JOIN "ActionType" t ON t."key" = e."actionTypeId";
 	`;
 
 	const byKey = new Map<string, LatestRow>();
