@@ -1,12 +1,21 @@
 import type { StatusResponse, ActionType } from '$lib/shared/types';
 
+async function handleError(res: Response): Promise<void> {
+	if (res.ok) return;
+
+	let message = res.statusText || 'Failed';
+	try {
+		const body = await res.json();
+		if (body?.message) message = body.message;
+	} catch {}
+
+	throw new Error(message);
+}
+
 export async function getStatus(): Promise<StatusResponse> {
 	const res = await fetch('/api/status');
 
-	if (!res.ok) {
-		throw new Error('Failed to fetch status');
-	}
-
+	await handleError(res);
 	return res.json();
 }
 
@@ -17,14 +26,7 @@ export async function logEvent(dogId: string, actionType: ActionType) {
 		body: JSON.stringify({ dogId, actionType })
 	});
 
-	if (!res.ok) {
-		let message = 'Failed';
-		try {
-			const body = await res.json();
-			if (body?.message) message = body.message;
-		} catch {}
-		throw new Error(message);
-	}
+	await handleError(res);
 }
 
 export async function undoEvent(eventId: string){
@@ -34,12 +36,5 @@ export async function undoEvent(eventId: string){
 		body: JSON.stringify({ eventId })
 	});
 
-	if (!res.ok) {
-		let message = 'Failed';
-		try {
-			const body = await res.json();
-			if (body?.message) message = body.message;
-		} catch {}
-		throw new Error(message);
-	}
+	await handleError(res);
 }
