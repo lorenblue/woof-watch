@@ -18,6 +18,8 @@ model Actor {
   eventsUndone   DogEvent[] @relation("UndoneBy")
   pushes         PushSubscription[]
   sessions       Session[]
+
+  @@map("actor")
 }
 
 model Dog {
@@ -25,12 +27,14 @@ model Dog {
   name String @unique
 
   events DogEvent[]
+  @@map("dog")
 }
 
 model ActionType {
   key String @id
 
   events DogEvent[]
+  @@map("action_type")
 }
 
 model DogEvent {
@@ -52,6 +56,8 @@ model DogEvent {
   @@index([dogId, actionTypeId, undoneAt, occurredAt(sort: Desc)])
   @@index([actorId])
   @@index([occurredAt])
+
+  @@map("dog_event")
 }
 
 model Session {
@@ -66,6 +72,8 @@ model Session {
   ipAddress String?
 
   @@index([actorId])
+
+  @@map("session")
 }
 
 model PushSubscription {
@@ -81,4 +89,6 @@ model PushSubscription {
   actor Actor @relation(fields: [actorId], references: [id], onDelete: Cascade)
 
   @@index([actorId])
+
+  @@map("push_subscription")
 }
