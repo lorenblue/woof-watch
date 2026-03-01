@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "Actor" ALTER COLUMN "code" DROP NOT NULL;

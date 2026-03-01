@@ -1,11 +1,8 @@
--- CreateSchema
-CREATE SCHEMA IF NOT EXISTS "public";
-
 -- CreateTable
 CREATE TABLE "Actor" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "code" TEXT NOT NULL,
+    "code" TEXT,
     "codeUsedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -22,10 +19,9 @@ CREATE TABLE "Dog" (
 
 -- CreateTable
 CREATE TABLE "ActionType" (
-    "id" TEXT NOT NULL,
     "key" TEXT NOT NULL,
 
-    CONSTRAINT "ActionType_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "ActionType_pkey" PRIMARY KEY ("key")
 );
 
 -- CreateTable
@@ -34,7 +30,6 @@ CREATE TABLE "DogEvent" (
     "dogId" TEXT NOT NULL,
     "actionTypeId" TEXT NOT NULL,
     "occurredAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "recordedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "actorId" TEXT NOT NULL,
     "undoneAt" TIMESTAMP(3),
     "undoneById" TEXT,
@@ -78,10 +73,13 @@ CREATE UNIQUE INDEX "Actor_code_key" ON "Actor"("code");
 CREATE UNIQUE INDEX "Dog_name_key" ON "Dog"("name");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ActionType_key_key" ON "ActionType"("key");
+CREATE INDEX "DogEvent_dogId_actionTypeId_undoneAt_occurredAt_idx" ON "DogEvent"("dogId", "actionTypeId", "undoneAt", "occurredAt" DESC);
 
 -- CreateIndex
-CREATE INDEX "DogEvent_dogId_actionTypeId_undoneAt_occurredAt_idx" ON "DogEvent"("dogId", "actionTypeId", "undoneAt", "occurredAt" DESC);
+CREATE INDEX "DogEvent_actorId_idx" ON "DogEvent"("actorId");
+
+-- CreateIndex
+CREATE INDEX "DogEvent_occurredAt_idx" ON "DogEvent"("occurredAt");
 
 -- CreateIndex
 CREATE INDEX "Session_actorId_idx" ON "Session"("actorId");
@@ -93,17 +91,19 @@ CREATE UNIQUE INDEX "PushSubscription_endpoint_key" ON "PushSubscription"("endpo
 CREATE INDEX "PushSubscription_actorId_idx" ON "PushSubscription"("actorId");
 
 -- AddForeignKey
-ALTER TABLE "DogEvent" ADD CONSTRAINT "DogEvent_dogId_fkey" FOREIGN KEY ("dogId") REFERENCES "Dog"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "DogEvent" ADD CONSTRAINT "DogEvent_dogId_fkey" FOREIGN KEY ("dogId") REFERENCES "Dog"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "DogEvent" ADD CONSTRAINT "DogEvent_actionTypeId_fkey" FOREIGN KEY ("actionTypeId") REFERENCES "ActionType"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "DogEvent" ADD CONSTRAINT "DogEvent_actionTypeId_fkey" FOREIGN KEY ("actionTypeId") REFERENCES "ActionType"("key") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "DogEvent" ADD CONSTRAINT "DogEvent_actorId_fkey" FOREIGN KEY ("actorId") REFERENCES "Actor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "DogEvent" ADD CONSTRAINT "DogEvent_undoneById_fkey" FOREIGN KEY ("undoneById") REFERENCES "Actor"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Session" ADD CONSTRAINT "Session_actorId_fkey" FOREIGN KEY ("actorId") REFERENCES "Actor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PushSubscription" ADD CONSTRAINT "PushSubscription_actorId_fkey" FOREIGN KEY ("actorId") REFERENCES "Actor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
+ALTER TABLE "PushSubscription" ADD CONSTRAINT "PushSubscription_actorId_fkey" FOREIGN KEY ("actorId") REFERENCES "Actor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
