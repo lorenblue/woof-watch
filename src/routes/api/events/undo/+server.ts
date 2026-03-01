@@ -21,7 +21,7 @@ export async function POST({ request, cookies }) {
 
 	await prisma.dogEvent.update({
 		where: { id: eventId },
-		data: { undoneAt: new Date() }
+		data: { undoneAt: new Date(), undoneById: actor.id }
 	});
 
 	return json({ ok: true });
