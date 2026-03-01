@@ -43,6 +43,21 @@ async function main() {
 		}
 	}
 
+	for (const dogName of ['George', 'Luna']) {
+		await prisma.dog.upsert({
+			where: { name: dogName },
+			update: {},
+			create: { name: dogName }
+		});
+	}
+
+	for (const key of ['pee', 'poo', 'eat']) {
+		await prisma.actionType.upsert({ 
+			where: { key }, 
+			update: {}, 
+			create: { key } });
+	}
+
 	console.log('✅ Seed complete');
 }
 
