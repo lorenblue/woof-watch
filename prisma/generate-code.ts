@@ -34,6 +34,10 @@ async function main() {
 		process.exit(1);
 	}
 
+	await prisma.session.deleteMany({
+		where: { actorId: existing.id }
+	});
+
 	const newCode = generateCode();
 
 	await prisma.actor.update({
