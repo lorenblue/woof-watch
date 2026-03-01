@@ -14,7 +14,7 @@ export function setSessionCookie(cookies: Cookies, sessionId: string) {
 		path: '/',
 		httpOnly: true,
 		sameSite: 'lax',
-		secure: true,
+		secure: process.env.NODE_ENV === 'production',
 		maxAge: SESSION_MAX_AGE_SECONDS
 	});
 }
