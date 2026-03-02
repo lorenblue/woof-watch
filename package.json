@@ -24,6 +24,7 @@
 		"@types/howler": "^2.2.12",
 		"@types/humanize-duration": "^3.27.4",
 		"@types/node": "^24.10.15",
+		"@vite-pwa/sveltekit": "^1.1.0",
 		"eslint": "^9.39.2",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.14.0",
