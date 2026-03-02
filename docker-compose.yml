@@ -27,10 +27,12 @@ services:
       postgres:
         condition: service_healthy
     environment:
+      APP_DOMAIN: ${APP_DOMAIN}
       DEFAULT_ACTORS: ${DEFAULT_ACTORS}
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=web"
       - "traefik.http.routers.woofwatch.rule=Host(`${APP_DOMAIN}`)"
       - "traefik.http.routers.woofwatch.entrypoints=websecure"
       - "traefik.http.routers.woofwatch.tls.certresolver=myresolver"
