@@ -48,7 +48,16 @@ async function main() {
 		}
 	});
 
-	const baseUrl = process.env.BASE_URL ?? 'http://localhost:5173';
+	let baseUrl: string;
+
+	if (process.env.NODE_ENV === 'production') {
+		if (!process.env.APP_DOMAIN) {
+			throw new Error('APP_DOMAIN is not set in production');
+		}
+		baseUrl = `https://${process.env.APP_DOMAIN}`;
+	} else {
+		baseUrl = 'http://localhost:5173';
+	}
 
 	console.log(`🔐 Link for ${name}:`);
 	console.log(`${baseUrl}/link?code=${newCode}`);
