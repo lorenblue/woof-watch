@@ -6,6 +6,197 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<title>WoofWatch</title>
+		<script>
+			(() => {
+				if (window.__woofStartupLog) return;
+
+				const listeners = new Set();
+				const roundMs = (value) => Math.round(value * 10) / 10;
+				const runtime = {
+					version: 1,
+					startedAtEpoch: Date.now(),
+					startedAtIso: new Date().toISOString(),
+					startedAtPerf: typeof performance !== 'undefined' ? performance.now() : 0,
+					seq: 0,
+					entries: [],
+					push(entry) {
+						const nowPerf = typeof performance !== 'undefined' ? performance.now() : 0;
+						const nextEntry = {
+							id: ++runtime.seq,
+							atIso: new Date().toISOString(),
+							sinceStartMs: roundMs(nowPerf - runtime.startedAtPerf),
+							...entry
+						};
+
+						runtime.entries = runtime.entries.concat(nextEntry).slice(-1000);
+						const snapshot = runtime.snapshot();
+						const meta = {
+							startedAtIso: runtime.startedAtIso,
+							entryCount: snapshot.length
+						};
+
+						for (const listener of listeners) {
+							listener(snapshot, meta);
+						}
+
+						const prefix = `[startup][${nextEntry.source}] +${nextEntry.sinceStartMs}ms ${nextEntry.message}`;
+						if (nextEntry.level === 'error') {
+							console.error(prefix, nextEntry.details ?? '');
+						} else if (nextEntry.level === 'warn') {
+							console.warn(prefix, nextEntry.details ?? '');
+						} else {
+							console.log(prefix, nextEntry.details ?? '');
+						}
+
+						return nextEntry;
+					},
+					snapshot() {
+						return runtime.entries.slice();
+					},
+					clear() {
+						runtime.entries = [];
+						const snapshot = runtime.snapshot();
+						const meta = {
+							startedAtIso: runtime.startedAtIso,
+							entryCount: snapshot.length
+						};
+						for (const listener of listeners) {
+							listener(snapshot, meta);
+						}
+					},
+					subscribe(listener) {
+						listeners.add(listener);
+						listener(runtime.snapshot(), {
+							startedAtIso: runtime.startedAtIso,
+							entryCount: runtime.entries.length
+						});
+						return () => listeners.delete(listener);
+					}
+				};
+
+				window.__woofStartupLog = runtime;
+
+				const log = (source, message, details, level = 'info') => {
+					runtime.push({ source, message, details, level });
+				};
+
+				const observerTypes = Array.isArray(window.PerformanceObserver?.supportedEntryTypes)
+					? window.PerformanceObserver.supportedEntryTypes
+					: [];
+				const standalone =
+					window.matchMedia?.('(display-mode: standalone)').matches ||
+					navigator.standalone ||
+					false;
+
+				log('boot', 'startup logger ready', {
+					href: location.href,
+					standalone,
+					readyState: document.readyState,
+					userAgent: navigator.userAgent
+				});
+
+				document.addEventListener('readystatechange', () => {
+					log('document', 'ready state changed', { readyState: document.readyState });
+				});
+
+				document.addEventListener('DOMContentLoaded', () => {
+					log('document', 'DOMContentLoaded');
+				});
+
+				document.addEventListener('visibilitychange', () => {
+					log('document', 'visibility changed', { visibilityState: document.visibilityState });
+				});
+
+				window.addEventListener('pageshow', (event) => {
+					log('window', 'pageshow', { persisted: event.persisted });
+				});
+
+				window.addEventListener('pagehide', (event) => {
+					log('window', 'pagehide', { persisted: event.persisted });
+				});
+
+				window.addEventListener('load', () => {
+					const navEntry = performance.getEntriesByType('navigation')[0];
+					if (navEntry) {
+						log('performance', 'navigation timing', {
+							type: navEntry.type,
+							responseStartMs: roundMs(navEntry.responseStart),
+							responseEndMs: roundMs(navEntry.responseEnd),
+							domInteractiveMs: roundMs(navEntry.domInteractive),
+							domContentLoadedMs: roundMs(navEntry.domContentLoadedEventEnd),
+							loadEventEndMs: roundMs(navEntry.loadEventEnd),
+							transferSize: navEntry.transferSize
+						});
+					}
+
+					log('window', 'load event fired');
+				});
+
+				window.addEventListener('error', (event) => {
+					log(
+						'window',
+						'uncaught error',
+						{
+							message: event.message,
+							filename: event.filename,
+							lineno: event.lineno,
+							colno: event.colno
+						},
+						'error'
+					);
+				});
+
+				window.addEventListener('unhandledrejection', (event) => {
+					log('window', 'unhandled rejection', { reason: String(event.reason) }, 'error');
+				});
+
+				if (observerTypes.includes('paint')) {
+					try {
+						new PerformanceObserver((list) => {
+							for (const entry of list.getEntries()) {
+								log('performance', 'paint metric', {
+									name: entry.name,
+									startTimeMs: roundMs(entry.startTime)
+								});
+							}
+						}).observe({ type: 'paint', buffered: true });
+					} catch {}
+				}
+
+				if (observerTypes.includes('largest-contentful-paint')) {
+					try {
+						new PerformanceObserver((list) => {
+							for (const entry of list.getEntries()) {
+								log('performance', 'largest contentful paint', {
+									startTimeMs: roundMs(entry.startTime),
+									renderTimeMs: roundMs(entry.renderTime || 0),
+									loadTimeMs: roundMs(entry.loadTime || 0),
+									size: entry.size
+								});
+							}
+						}).observe({ type: 'largest-contentful-paint', buffered: true });
+					} catch {}
+				}
+
+				if (observerTypes.includes('longtask')) {
+					try {
+						new PerformanceObserver((list) => {
+							for (const entry of list.getEntries()) {
+								log(
+									'performance',
+									'long task',
+									{
+										startTimeMs: roundMs(entry.startTime),
+										durationMs: roundMs(entry.duration)
+									},
+									'warn'
+								);
+							}
+						}).observe({ type: 'longtask', buffered: true });
+					} catch {}
+				}
+			})();
+		</script>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">
