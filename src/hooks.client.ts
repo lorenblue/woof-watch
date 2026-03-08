@@ -4,7 +4,7 @@ import { measureStartup, startupError, startupLog } from '$lib/debug/startup-log
 
 startupLog('pwa', 'hooks.client evaluated');
 
-const swMeasure = measureStartup('pwa', 'registerSW', { immediate: true });
+const swMeasure = measureStartup('pwa', 'registerSW', { immediate: false });
 
 function watchWorker(label: string, worker: ServiceWorker | null | undefined) {
 	if (!worker) return;
@@ -16,7 +16,7 @@ function watchWorker(label: string, worker: ServiceWorker | null | undefined) {
 }
 
 registerSW({
-	immediate: true,
+	immediate: false,
 	onRegisteredSW(swScriptUrl: string, registration: ServiceWorkerRegistration | undefined) {
 		swMeasure.end({
 			swScriptUrl,
