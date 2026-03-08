@@ -8,7 +8,13 @@ export default defineConfig({
     tailwindcss(),
     sveltekit(),
     SvelteKitPWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
+			workbox: {
+				navigateFallback: null,
+				clientsClaim: true,
+				skipWaiting: true,
+				globPatterns: ['**/*.{js,css,ico,png,svg}']
+			},
       manifest: {
         name: 'Woof Watch',
         short_name: 'Woof',
