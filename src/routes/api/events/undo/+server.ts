@@ -3,7 +3,7 @@ import { prisma } from '$lib/server/prisma';
 import { requireActor } from '$lib/server/auth';
 
 export async function POST({ request, cookies }) {
-	const actor = await requireActor(cookies.get('sessionId') ?? undefined);
+	const actor = await requireActor(cookies);
 	const body = await request.json();
 	const eventId = body?.eventId?.trim();
 

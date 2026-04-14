@@ -20,9 +20,9 @@ export function setSessionCookie(cookies: Cookies, sessionId: string) {
 }
 
 export async function getSessionActor(
-	sessionId?: string,
-	cookies?: Cookies
+	cookies: Cookies
 ) {
+	const sessionId = cookies.get('sessionId');
 	if (!sessionId) return null;
 
 	const session = await prisma.session.findUnique({
@@ -49,19 +49,16 @@ export async function getSessionActor(
 			}
 		});
 
-		if (cookies) {
-			setSessionCookie(cookies, session.id);
-		}
+		setSessionCookie(cookies, session.id);
 	}
 
 	return session.actor;
 }
 
 export async function requireActor(
-	sessionId?: string,
-	cookies?: Cookies
+	cookies: Cookies
 ) {
-	const actor = await getSessionActor(sessionId, cookies);
+	const actor = await getSessionActor(cookies);
 	if (!actor) throw error(401, 'Not authenticated');
 	return actor;
 }

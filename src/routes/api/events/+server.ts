@@ -5,7 +5,7 @@ import type { CreateEventRequest, CreateEventResponse, ActionType } from '$lib/s
 import { requireActor } from '$lib/server/auth';
 
 export async function POST({ request, cookies }) {
-	const actor = await requireActor(cookies.get('sessionId') ?? undefined);
+	const actor = await requireActor(cookies);
 	const body = (await request.json().catch(() => null)) as Partial<CreateEventRequest> | null;
 	const dogId = body?.dogId?.trim();
 	const actionType = body?.actionType as ActionType | undefined;
