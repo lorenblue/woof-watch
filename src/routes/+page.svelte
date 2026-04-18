@@ -4,6 +4,7 @@
   import { getStatus, logEvent, undoEvent } from '$lib/api/client';
   import humanizeDuration from "humanize-duration";
   import ActionButton from '$lib/components/ActionButton.svelte';
+  import AppHeader from '$lib/components/AppHeader.svelte';
 
   type Props = {
     data: { actorName: string | null; dogs: DogStatus[] };
@@ -111,21 +112,10 @@
 </script>
 
 <main class="h-dvh bg-black text-zinc-100 flex flex-col">
-
-    <!-- Header -->
-    <header class="px-5 pt-6 pb-3">
-        <div class="flex items-baseline justify-between">
-            <h1 class="text-2xl font-bold tracking-tight">Woof Watch</h1>
-
-            {#if data.actorName}
-                <span class="text-xs text-emerald-400 font-medium">
-                    Linked as {data.actorName}
-                </span>
-            {/if}
-        </div>
-    </header>
-
-    <!-- Dogs Area -->
+	
+	<AppHeader actorName={data.actorName} navLink={{ href: '/stats', label: 'Stats' }} />
+	
+	<!-- Dogs Area -->
     <section class="flex flex-col gap-4 px-5 pb-6">
         {#each dogs.slice(0,2) as d}
             <div class="flex flex-col rounded-3xl bg-zinc-900 p-4">
