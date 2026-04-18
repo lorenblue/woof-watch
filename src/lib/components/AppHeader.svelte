@@ -4,21 +4,34 @@
 		label: string;
 	};
 
-	type Props = {
-		actorName: string | null;
-		navLink?: NavLink;
+	type StatusBadge = {
+		label: string;
+		tone?: 'warning';
 	};
 
-	let { actorName, navLink }: Props = $props();
+	type Props = {
+		navLink?: NavLink;
+		statusBadge?: StatusBadge;
+	};
+
+	let { navLink, statusBadge }: Props = $props();
 </script>
 
 <header class="px-5 pt-6 pb-3">
-	<div class="flex items-baseline justify-between gap-3">
+	<div class="flex items-center justify-between gap-3">
 		<h1 class="text-2xl font-bold tracking-tight">Woof Watch</h1>
 
 		<div class="flex items-center gap-3">
-			{#if actorName}
-				<span class="text-xs font-medium text-emerald-400">Linked as {actorName}</span>
+			{#if statusBadge}
+				<span
+					class={`rounded-full px-3 py-1 text-xs font-medium ${
+						statusBadge.tone === 'warning'
+							? 'bg-amber-500/15 text-amber-300'
+							: 'bg-zinc-800 text-zinc-300'
+					}`}
+				>
+					{statusBadge.label}
+				</span>
 			{/if}
 
 			{#if navLink}

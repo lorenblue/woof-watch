@@ -50,7 +50,7 @@
 </script>
 
 <main class="flex h-dvh flex-col bg-black text-zinc-100">
-	<AppHeader actorName={data.actorName} navLink={{ href: '/', label: 'Home' }} />
+	<AppHeader navLink={{ href: '/', label: 'Back to Home' }} />
 
 	<section class="flex flex-col gap-4 px-5 pb-6">
 		<div class="rounded-3xl bg-zinc-900 p-4">
