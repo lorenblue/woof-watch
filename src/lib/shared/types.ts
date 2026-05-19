@@ -40,17 +40,31 @@ export type StatusResponse = {
 export type CreateEventRequest = {
 	dogId: string;
 	actionType: ActionType;
+	occurredAt?: string;
 };
 
 export type CreateEventResponse =
 	| {
 			ok: true;
 			eventId: string;
+			occurredAt: string;
+			isLatest: boolean;
 	  }
 	| {
 			ok: false;
 			error: string;
 	  };
+
+export type EventHistoryItem = {
+	id: string;
+	occurredAt: string;
+	actorName: string;
+	canUndo: boolean;
+};
+
+export type EventHistoryResponse = {
+	events: EventHistoryItem[];
+};
 
 export type ActorLeaderboardEntry = {
 	actorId: string;
