@@ -49,6 +49,7 @@
 	let history = $state<EventHistoryItem[]>([]);
 	let message = $state<Message>(null);
 	let isHistoryLoading = $state(false);
+	let hasLoadedHistory = $state(false);
 	let isActionLoading = $state(false);
 	let customOccurredAt = $state(localDatetimeValue(new Date()));
 
@@ -98,8 +99,10 @@
 		try {
 			const result = await onGetHistory(dogId, actionType);
 			history = result.events;
+			hasLoadedHistory = true;
 		} catch (err: unknown) {
 			message = { text: getErrorMessage(err), className: 'text-red-400' };
+			hasLoadedHistory = true;
 		} finally {
 			isHistoryLoading = false;
 		}
@@ -178,7 +181,7 @@
 	onclick={handleBackdropClick}
 >
 	<div
-		class="max-h-[88dvh] w-full overflow-y-auto rounded-t-3xl bg-zinc-950 p-5 text-zinc-100 shadow-2xl ring-1 ring-zinc-800"
+		class="no-touch-callout flex h-[82dvh] max-h-[88dvh] w-full flex-col rounded-t-3xl bg-zinc-950 p-5 text-zinc-100 shadow-2xl ring-1 ring-zinc-800"
 		role="dialog"
 		aria-modal="true"
 		aria-label={`${label} options`}
@@ -201,7 +204,7 @@
 		<div class="grid grid-cols-2 gap-2">
 			{#each quickBackdates as option (option.label)}
 				<button
-					class="rounded-2xl bg-zinc-900 px-3 py-3 text-sm font-semibold text-zinc-100 transition active:scale-95 disabled:opacity-50"
+					class="rounded-2xl bg-zinc-900 px-3 py-3 text-sm font-semibold text-zinc-100 transition active:scale-95"
 					onclick={() => logQuickBackdate(option.ms)}
 					disabled={isActionLoading}
 				>
@@ -224,7 +227,7 @@
 					max={localDatetimeValue(new Date())}
 				/>
 				<button
-					class="rounded-xl bg-zinc-100 px-3 py-2 text-sm font-semibold text-black disabled:opacity-50"
+					class="rounded-xl bg-zinc-100 px-3 py-2 text-sm font-semibold text-black"
 					onclick={logCustomTime}
 					disabled={isActionLoading}
 				>
@@ -239,15 +242,15 @@
 			</p>
 		{/if}
 
-		<div class="mt-5">
+		<div class="mt-5 flex min-h-0 flex-1 flex-col">
 			<h4 class="text-xs font-semibold tracking-[0.2em] text-zinc-500 uppercase">Recent</h4>
 
-			{#if isHistoryLoading}
+			{#if isHistoryLoading && !hasLoadedHistory}
 				<p class="mt-3 text-sm text-zinc-500">Loading...</p>
 			{:else if history.length === 0}
 				<p class="mt-3 text-sm text-zinc-500">No recent logs.</p>
 			{:else}
-				<div class="mt-3 flex flex-col gap-2">
+				<div class="mt-3 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
 					{#each history as event (event.id)}
 						<div class="flex items-center justify-between gap-3 rounded-2xl bg-zinc-900 p-3">
 							<div class="min-w-0">
@@ -261,7 +264,7 @@
 
 							{#if event.canUndo}
 								<button
-									class="shrink-0 rounded-full border border-zinc-800 px-3 py-1 text-xs font-medium text-zinc-300 disabled:opacity-50"
+									class="shrink-0 rounded-full border border-zinc-800 px-3 py-1 text-xs font-medium text-zinc-300"
 									onclick={() => undoHistoryItem(event.id)}
 									disabled={isActionLoading}
 								>

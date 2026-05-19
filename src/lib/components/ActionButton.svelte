@@ -23,6 +23,7 @@
 	};
 
 	const LONG_PRESS_MS = 550;
+	const SUPPRESS_CLICK_MS = 700;
 
 	let {
 		dogId,
@@ -41,6 +42,7 @@
 	let messageTimer: ReturnType<typeof setTimeout> | null = null;
 	let isLoading = $state(false);
 	let longPressTimer: ReturnType<typeof setTimeout> | null = null;
+	let suppressClickTimer: ReturnType<typeof setTimeout> | null = null;
 	let suppressNextClick = false;
 	let isSheetOpen = $state(false);
 
@@ -49,6 +51,18 @@
 			clearTimeout(longPressTimer);
 			longPressTimer = null;
 		}
+	}
+
+	function suppressUpcomingClick() {
+		if (suppressClickTimer) {
+			clearTimeout(suppressClickTimer);
+		}
+
+		suppressNextClick = true;
+		suppressClickTimer = setTimeout(() => {
+			suppressNextClick = false;
+			suppressClickTimer = null;
+		}, SUPPRESS_CLICK_MS);
 	}
 
 	function openSheet() {
@@ -63,7 +77,7 @@
 		clearLongPressTimer();
 
 		longPressTimer = setTimeout(() => {
-			suppressNextClick = true;
+			suppressUpcomingClick();
 			openSheet();
 		}, LONG_PRESS_MS);
 	}
@@ -118,13 +132,16 @@
 		if (messageTimer) {
 			clearTimeout(messageTimer);
 		}
+		if (suppressClickTimer) {
+			clearTimeout(suppressClickTimer);
+		}
 		clearLongPressTimer();
 	});
 </script>
 
 <div class="flex flex-col gap-1">
 	<button
-		class={`w-full rounded-2xl py-3 text-base font-semibold active:scale-95 ${toneClass}`}
+		class={`no-touch-callout w-full rounded-2xl py-3 text-base font-semibold active:scale-95 ${toneClass}`}
 		onclick={handleClick}
 		onpointerdown={handlePointerDown}
 		onpointerup={handlePointerEnd}

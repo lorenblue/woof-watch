@@ -1,5 +1,13 @@
 @import 'tailwindcss';
 
-html, body {
-    background: #000000;
+html,
+body {
+	background: #000000;
+}
+
+.no-touch-callout {
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	user-select: none;
+	touch-action: manipulation;
 }
