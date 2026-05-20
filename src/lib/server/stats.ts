@@ -44,7 +44,7 @@ export function parseStatsPeriod(url: URL): StatsPeriod {
 	if (!raw) return '7d';
 
 	const period = PERIOD_ALIASES[raw];
-	if (!period) throw error(400, 'bad period');
+	if (!period) throw error(400, 'Invalid stats period');
 
 	return period;
 }
@@ -55,7 +55,7 @@ export function parseStatsActionType(url: URL): StatsActionFilter {
 	if (!raw) return 'all';
 
 	const actionType = ACTION_TYPE_ALIASES[raw];
-	if (!actionType) throw error(400, 'bad actionType');
+	if (!actionType) throw error(400, 'Invalid action type');
 
 	return actionType;
 }

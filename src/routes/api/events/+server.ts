@@ -20,17 +20,17 @@ function parseOccurredAt(raw: unknown) {
 
 	const occurredAt = new Date(raw);
 	if (Number.isNaN(occurredAt.getTime())) {
-		throw error(400, 'bad occurredAt');
+		throw error(400, 'Invalid event time');
 	}
 
 	const now = Date.now();
 	const occurredAtMs = occurredAt.getTime();
 	if (occurredAtMs > now + MAX_FUTURE_SKEW_MS) {
-		throw error(400, 'occurredAt cannot be in the future');
+		throw error(400, 'Event time cannot be in the future');
 	}
 
 	if (now - occurredAtMs > MAX_BACKDATE_MS) {
-		throw error(400, 'occurredAt is too far in the past');
+		throw error(400, 'Event time is outside the allowed range');
 	}
 
 	return occurredAt;
@@ -41,8 +41,8 @@ export async function GET({ url, cookies }) {
 	const dogId = url.searchParams.get('dogId')?.trim();
 	const actionType = url.searchParams.get('actionType')?.trim();
 
-	if (!dogId) throw error(400, 'dogId required');
-	if (!actionType || !isActionType(actionType)) throw error(400, 'bad actionType');
+	if (!dogId) throw error(400, 'Missing dog');
+	if (!actionType || !isActionType(actionType)) throw error(400, 'Invalid action type');
 
 	const events = await prisma.dogEvent.findMany({
 		where: {
@@ -80,15 +80,15 @@ export async function POST({ request, cookies }) {
 	const dogId = body?.dogId?.trim();
 	const actionType = body?.actionType as ActionType | undefined;
 
-	if (!dogId) throw error(400, 'dogId required');
-	if (!actionType || !isActionType(actionType)) throw error(400, 'bad actionType');
+	if (!dogId) throw error(400, 'Missing dog');
+	if (!actionType || !isActionType(actionType)) throw error(400, 'Invalid action type');
 
 	const [dog, actionTypeRow] = await Promise.all([
 		prisma.dog.findUnique({ where: { id: dogId } }),
 		prisma.actionType.findUnique({ where: { key: actionType } })
 	]);
-	if (!dog) throw error(400, 'bad dogId');
-	if (!actionTypeRow) throw error(400, 'bad actionType');
+	if (!dog) throw error(400, 'Invalid dog');
+	if (!actionTypeRow) throw error(400, 'Invalid action type');
 
 	const occurredAt = parseOccurredAt(body?.occurredAt);
 	const duplicateWindowStart = new Date(occurredAt.getTime() - MIN_EVENT_INTERVAL_MS);
@@ -108,7 +108,7 @@ export async function POST({ request, cookies }) {
 	});
 
 	if (duplicateEvt) {
-		throw error(429, 'Event posted too recently');
+		throw error(429, 'Duplicate event too close to existing event');
 	}
 
 	const evt = await prisma.dogEvent.create({

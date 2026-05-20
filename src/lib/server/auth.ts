@@ -19,9 +19,7 @@ export function setSessionCookie(cookies: Cookies, sessionId: string) {
 	});
 }
 
-export async function getSessionActor(
-	cookies: Cookies
-) {
+export async function getSessionActor(cookies: Cookies) {
 	const sessionId = cookies.get('sessionId');
 	if (!sessionId) return null;
 
@@ -31,7 +29,7 @@ export async function getSessionActor(
 	});
 
 	if (!session) return null;
-	
+
 	if (session.expiresAt < new Date()) {
 		await prisma.session.delete({ where: { id: session.id } });
 		return null;
@@ -55,10 +53,8 @@ export async function getSessionActor(
 	return session.actor;
 }
 
-export async function requireActor(
-	cookies: Cookies
-) {
+export async function requireActor(cookies: Cookies) {
 	const actor = await getSessionActor(cookies);
-	if (!actor) throw error(401, 'Not authenticated');
+	if (!actor) throw error(401, 'Authentication required');
 	return actor;
 }

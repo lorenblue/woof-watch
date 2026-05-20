@@ -8,12 +8,13 @@ import type {
 async function handleError(res: Response): Promise<void> {
 	if (res.ok) return;
 
-	let message = res.statusText || 'Failed';
+	let message = 'Request failed';
 	try {
 		const body = await res.json();
 		if (body?.message) message = body.message;
 	} catch {
-		// Keep the HTTP status text when the response is not JSON.
+		if (res.status === 401) message = 'Authentication required';
+		if (res.status === 404) message = 'Not found';
 	}
 
 	throw new Error(message);
