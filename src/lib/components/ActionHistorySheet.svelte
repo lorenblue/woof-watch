@@ -181,7 +181,7 @@
 	onclick={handleBackdropClick}
 >
 	<div
-		class="no-touch-callout flex h-[82dvh] max-h-[88dvh] w-full flex-col rounded-t-3xl bg-zinc-950 p-5 text-zinc-100 shadow-2xl ring-1 ring-zinc-800"
+		class="no-touch-callout flex h-136 max-h-[88dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-zinc-950 p-5 text-zinc-100 shadow-2xl ring-1 ring-zinc-800"
 		role="dialog"
 		aria-modal="true"
 		aria-label={`${label} options`}
@@ -250,7 +250,7 @@
 			{:else if history.length === 0}
 				<p class="mt-3 text-sm text-zinc-500">No recent logs.</p>
 			{:else}
-				<div class="mt-3 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
+				<div class="mt-3 flex h-58 min-h-0 flex-col gap-2 overflow-y-auto">
 					{#each history as event (event.id)}
 						<div class="flex items-center justify-between gap-3 rounded-2xl bg-zinc-900 p-3">
 							<div class="min-w-0">
