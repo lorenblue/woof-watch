@@ -25,7 +25,7 @@
 		onFeedback: (text: string, className: string) => void;
 	};
 
-	const MAX_BACKDATE_MS = 24 * 60 * 60 * 1000;
+	const MAX_BACKDATE_MS = 12 * 60 * 60 * 1000;
 	const quickBackdates: QuickBackdate[] = [
 		{ label: '15m ago', ms: 15 * 60 * 1000 },
 		{ label: '30m ago', ms: 30 * 60 * 1000 },
@@ -190,7 +190,7 @@
 		<div class="mb-4 flex items-center justify-between gap-3">
 			<div>
 				<h3 class="text-lg font-semibold">{icon} {label}</h3>
-				<p class="mt-1 text-xs text-zinc-500">Last 24 hours</p>
+				<p class="mt-1 text-xs text-zinc-500">Add a log</p>
 			</div>
 
 			<button

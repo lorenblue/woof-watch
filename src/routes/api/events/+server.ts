@@ -10,7 +10,7 @@ import type {
 import { requireActor } from '$lib/server/auth';
 
 const MIN_EVENT_INTERVAL_MS = 5 * 60 * 1000;
-const MAX_BACKDATE_MS = 24 * 60 * 60 * 1000;
+const MAX_EVENT_AGE_MS = 12 * 60 * 60 * 1000;
 const MAX_FUTURE_SKEW_MS = 60 * 1000;
 
 function parseOccurredAt(raw: unknown) {
@@ -29,7 +29,7 @@ function parseOccurredAt(raw: unknown) {
 		throw error(400, 'Event time cannot be in the future');
 	}
 
-	if (now - occurredAtMs > MAX_BACKDATE_MS) {
+	if (now - occurredAtMs > MAX_EVENT_AGE_MS) {
 		throw error(400, 'Event time is outside the allowed range');
 	}
 
@@ -50,7 +50,7 @@ export async function GET({ url, cookies }) {
 			actionTypeId: actionType,
 			undoneAt: null,
 			occurredAt: {
-				gte: new Date(Date.now() - MAX_BACKDATE_MS)
+				gte: new Date(Date.now() - MAX_EVENT_AGE_MS)
 			}
 		},
 		include: {
