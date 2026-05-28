@@ -7,7 +7,7 @@ This project now uses PostgreSQL via Prisma.
 Start PostgreSQL and the app with Docker:
 
 ```sh
-docker compose up -d --build
+docker compose -f compose.dev.yml up -d --build
 ```
 
 1. Set `DATABASE_URL` (example):
@@ -37,15 +37,15 @@ http://localhost:3000
 Useful Docker commands:
 
 ```sh
-docker compose logs -f app
-docker compose logs -f postgres
-docker compose down
+docker compose -f compose.dev.yml logs -f app
+docker compose -f compose.dev.yml logs -f postgres
+docker compose -f compose.dev.yml down
 ```
 
 4. (Optional) seed app lookup data/dogs/actors:
 
 ```sh
-curl -X POST http://localhost:5173/api/admin/seed
+npx prisma db seed
 ```
 
 ## Development

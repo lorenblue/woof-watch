@@ -1,13 +1,15 @@
 services:
   postgres:
     image: postgres:18-alpine
-    container_name: woof-watch-postgres
+    container_name: woof-watch-postgres-dev
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -15,37 +17,22 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-    networks:
-      - internal 
 
   app:
-    image: ghcr.io/lorenblue/woof-watch:latest
-    pull_policy: always
-    container_name: woof-watch-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: woof-watch:dev
+    container_name: woof-watch-app-dev
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
     environment:
-      APP_DOMAIN: ${APP_DOMAIN}
-      DEFAULT_ACTORS: ${DEFAULT_ACTORS}
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=web"
-      - "traefik.http.routers.woofwatch.rule=Host(`${APP_DOMAIN}`)"
-      - "traefik.http.routers.woofwatch.entrypoints=websecure"
-      - "traefik.http.routers.woofwatch.tls.certresolver=myresolver"
-      - "traefik.http.services.woofwatch.loadbalancer.server.port=3000"
-    networks:
-      - web       
-      - internal
+      DEFAULT_ACTORS: ${DEFAULT_ACTORS:-}
+    ports:
+      - "3000:3000"
 
 volumes:
   postgres_data:
-
-networks:
-  web:
-    external: true
-  internal:
-    driver: bridge
