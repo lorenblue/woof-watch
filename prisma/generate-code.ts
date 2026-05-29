@@ -1,7 +1,5 @@
 import 'dotenv/config';
-// @ts-ignore
 import pg from 'pg';
-// @ts-ignore
 import { PrismaClient } from './generated/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import crypto from 'crypto';

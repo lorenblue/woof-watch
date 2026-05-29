@@ -1,4 +1,4 @@
-﻿FROM node:lts-alpine AS deps
+FROM node:lts-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 COPY prisma ./prisma

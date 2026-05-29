@@ -1,31 +1,27 @@
 # Woof Watch
 
-## Database
+Woof Watch is a mobile-first PWA for coordinating dog care across a household, with quick logging, live status, undo support, and stats for pee, poo, and meal events.
 
-This project now uses PostgreSQL via Prisma.
+## Local Docker Setup
 
-Start PostgreSQL and the app with Docker:
+Create a local environment file:
+
+```sh
+cp .env.example .env
+```
+
+Start PostgreSQL and the app:
 
 ```sh
 docker compose -f compose.dev.yml up -d --build
 ```
 
-1. Set `DATABASE_URL` (example):
-
-```sh
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/woof_watch?schema=public"
-```
-
-2. Apply the baseline migration:
+Apply database migrations, generate the Prisma client, and seed local data:
 
 ```sh
 npx prisma migrate dev
-```
-
-3. Generate Prisma Client:
-
-```sh
 npx prisma generate
+npx prisma db seed
 ```
 
 App URL:
@@ -42,12 +38,6 @@ docker compose -f compose.dev.yml logs -f postgres
 docker compose -f compose.dev.yml down
 ```
 
-4. (Optional) seed app lookup data/dogs/actors:
-
-```sh
-npx prisma db seed
-```
-
 ## Development
 
 ```sh
@@ -55,8 +45,20 @@ npm install
 npm run dev
 ```
 
+Set `DATABASE_URL` when running outside Docker:
+
+```sh
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/woof_watch?schema=public"
+```
+
+## Production Compose
+
+`compose.prod.yml` is a deployment reference for the published Docker image and Traefik. It is not required for local development.
+
 ## Checks
 
 ```sh
 npm run check
+npm run lint
+npm run build
 ```

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import type { StatsActionFilter, StatsPeriod } from '$lib/shared/types';
 	import AppHeader from '$lib/components/AppHeader.svelte';
 	import type { PageData } from './$types';
@@ -35,15 +36,6 @@
 
 	let { data }: { data: PageData } = $props();
 
-	function buildHref(next: { period?: StatsPeriod; actionType?: StatsActionFilter }) {
-		const params = new URLSearchParams({
-			period: next.period ?? data.stats.period,
-			actionType: next.actionType ?? data.stats.actionType
-		});
-
-		return `/stats?${params.toString()}`;
-	}
-
 	function shareLabel(shareOfTotal: number) {
 		return percentFormatter.format(shareOfTotal);
 	}
@@ -54,10 +46,13 @@
 
 	<section class="flex flex-col gap-4 px-5 pb-6">
 		<div class="rounded-3xl bg-zinc-900 p-4">
-			<div class="grid grid-cols-3 gap-2">
-				{#each periodOptions as option}
-					<a
-						href={buildHref({ period: option.value })}
+			<form method="GET" action={resolve('/stats')} class="grid grid-cols-3 gap-2">
+				<input type="hidden" name="actionType" value={data.stats.actionType} />
+				{#each periodOptions as option (option.value)}
+					<button
+						type="submit"
+						name="period"
+						value={option.value}
 						aria-current={option.value === data.stats.period ? 'page' : undefined}
 						class={`rounded-2xl px-3 py-2 text-center text-sm font-semibold transition ${
 							option.value === data.stats.period
@@ -66,14 +61,17 @@
 						}`}
 					>
 						{option.label}
-					</a>
+					</button>
 				{/each}
-			</div>
+			</form>
 
-			<div class="mt-4 grid grid-cols-4 gap-2">
-				{#each actionOptions as option}
-					<a
-						href={buildHref({ actionType: option.value })}
+			<form method="GET" action={resolve('/stats')} class="mt-4 grid grid-cols-4 gap-2">
+				<input type="hidden" name="period" value={data.stats.period} />
+				{#each actionOptions as option (option.value)}
+					<button
+						type="submit"
+						name="actionType"
+						value={option.value}
 						aria-current={option.value === data.stats.actionType ? 'page' : undefined}
 						class={`rounded-2xl px-3 py-2 text-center text-sm font-semibold transition ${
 							option.value === data.stats.actionType
@@ -82,9 +80,9 @@
 						}`}
 					>
 						{option.label}
-					</a>
+					</button>
 				{/each}
-			</div>
+			</form>
 		</div>
 
 		{#if data.stats.totalEvents === 0}
@@ -93,7 +91,7 @@
 			</div>
 		{:else}
 			<div class="flex flex-col gap-3">
-				{#each data.stats.actors as actor, index}
+				{#each data.stats.actors as actor, index (actor.actorId)}
 					<div
 						class={`rounded-3xl px-4 py-4 ${
 							index === 0 ? 'bg-zinc-800 ring-1 ring-zinc-700' : 'bg-zinc-900'

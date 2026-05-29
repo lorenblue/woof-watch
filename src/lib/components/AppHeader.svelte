@@ -1,6 +1,8 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
+
 	type NavLink = {
-		href: string;
+		href: '/' | '/stats';
 		label: string;
 	};
 
@@ -36,7 +38,7 @@
 
 			{#if navLink}
 				<a
-					href={navLink.href}
+					href={resolve(navLink.href)}
 					class="rounded-full border border-zinc-800 px-3 py-1 text-xs font-medium text-zinc-300 transition hover:border-zinc-700 hover:text-zinc-100"
 				>
 					{navLink.label}

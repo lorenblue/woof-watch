@@ -1,6 +1,4 @@
-// @ts-ignore
 import pg from 'pg';
-// @ts-ignore
 import { PrismaClient } from './generated/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 
@@ -21,7 +19,7 @@ async function createActorIfMissing(name: string) {
 			data: {
 				name,
 				code: null,
-				codeUsedAt: null,
+				codeUsedAt: null
 			}
 		});
 	}
@@ -30,32 +28,41 @@ async function createActorIfMissing(name: string) {
 async function main() {
 	console.log('🌱 Seeding...');
 
-	const names = (process.env.DEFAULT_ACTORS ?? '')
+	const actorNames = (process.env.DEFAULT_ACTORS ?? '')
+		.split(',')
+		.map((n) => n.trim())
+		.filter(Boolean);
+	const dogNames = (process.env.DEFAULT_DOGS ?? '')
 		.split(',')
 		.map((n) => n.trim())
 		.filter(Boolean);
 
-	if (names.length === 0) {
+	if (actorNames.length === 0) {
 		console.log('No DEFAULT_ACTORS provided. Skipping actor creation.');
 	} else {
-		for (const name of names) {
+		for (const name of actorNames) {
 			await createActorIfMissing(name);
 		}
 	}
 
-	for (const dogName of ['George', 'Luna']) {
-		await prisma.dog.upsert({
-			where: { name: dogName },
-			update: {},
-			create: { name: dogName }
-		});
+	if (dogNames.length === 0) {
+		console.log('No DEFAULT_DOGS provided. Skipping dog creation.');
+	} else {
+		for (const dogName of dogNames) {
+			await prisma.dog.upsert({
+				where: { name: dogName },
+				update: {},
+				create: { name: dogName }
+			});
+		}
 	}
 
 	for (const key of ['pee', 'poo', 'eat']) {
-		await prisma.actionType.upsert({ 
-			where: { key }, 
-			update: {}, 
-			create: { key } });
+		await prisma.actionType.upsert({
+			where: { key },
+			update: {},
+			create: { key }
+		});
 	}
 
 	console.log('✅ Seed complete');

@@ -11,7 +11,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
       interval: 5s
       timeout: 5s
       retries: 10
@@ -29,14 +29,15 @@ services:
     environment:
       APP_DOMAIN: ${APP_DOMAIN}
       DEFAULT_ACTORS: ${DEFAULT_ACTORS:-}
+      DEFAULT_DOGS: ${DEFAULT_DOGS:-}
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
     labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=web"
-      - "traefik.http.routers.woofwatch.rule=Host(`${APP_DOMAIN}`)"
-      - "traefik.http.routers.woofwatch.entrypoints=websecure"
-      - "traefik.http.routers.woofwatch.tls.certresolver=myresolver"
-      - "traefik.http.services.woofwatch.loadbalancer.server.port=3000"
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=web'
+      - 'traefik.http.routers.woofwatch.rule=Host(`${APP_DOMAIN}`)'
+      - 'traefik.http.routers.woofwatch.entrypoints=websecure'
+      - 'traefik.http.routers.woofwatch.tls.certresolver=myresolver'
+      - 'traefik.http.services.woofwatch.loadbalancer.server.port=3000'
     networks:
       - web
       - internal
