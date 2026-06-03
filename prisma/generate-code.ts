@@ -15,6 +15,21 @@ function generateCode() {
 	return crypto.randomBytes(16).toString('base64url');
 }
 
+function getBaseUrl() {
+	const configuredBaseUrl = process.env.APP_BASE_URL?.replace(/\/$/, '');
+	if (configuredBaseUrl) return configuredBaseUrl;
+
+	if (process.env.NODE_ENV === 'production') {
+		if (!process.env.APP_DOMAIN) {
+			throw new Error('APP_DOMAIN is not set in production');
+		}
+
+		return `https://${process.env.APP_DOMAIN}`;
+	}
+
+	return 'http://localhost:3000';
+}
+
 async function main() {
 	const args = process.argv.slice(2);
 	const revokeSessions = args.includes('--revoke-sessions');
@@ -50,16 +65,7 @@ async function main() {
 		}
 	});
 
-	let baseUrl: string;
-
-	if (process.env.NODE_ENV === 'production') {
-		if (!process.env.APP_DOMAIN) {
-			throw new Error('APP_DOMAIN is not set in production');
-		}
-		baseUrl = `https://${process.env.APP_DOMAIN}`;
-	} else {
-		baseUrl = 'http://localhost:5173';
-	}
+	const baseUrl = getBaseUrl();
 
 	console.log(`🔐 Link for ${name}:`);
 	console.log(`${baseUrl}/link?code=${newCode}`);
