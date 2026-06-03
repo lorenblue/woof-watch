@@ -9,6 +9,10 @@ import type {
 import { Prisma } from '../../../prisma/generated/client';
 
 const PERIOD_ALIASES: Record<string, StatsPeriod> = {
+	'1d': '1d',
+	'24h': '1d',
+	day: '1d',
+	today: '1d',
 	'7d': '7d',
 	week: '7d',
 	'30d': '30d',
@@ -62,6 +66,8 @@ export function parseStatsActionType(url: URL): StatsActionFilter {
 
 function periodFilter(period: StatsPeriod) {
 	switch (period) {
+		case '1d':
+			return Prisma.sql`AND e."occurredAt" >= now() - interval '24 hours'`;
 		case '7d':
 			return Prisma.sql`AND e."occurredAt" >= now() - interval '7 days'`;
 		case '30d':

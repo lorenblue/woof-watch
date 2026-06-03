@@ -5,7 +5,7 @@ export function isActionType(x: unknown): x is ActionType {
 	return typeof x === 'string' && (ACTION_TYPES as readonly string[]).includes(x);
 }
 
-export const STATS_PERIODS = ['7d', '30d', 'all'] as const;
+export const STATS_PERIODS = ['1d', '7d', '30d', 'all'] as const;
 export type StatsPeriod = (typeof STATS_PERIODS)[number];
 
 export function isStatsPeriod(x: unknown): x is StatsPeriod {

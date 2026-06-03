@@ -10,6 +10,7 @@
 	};
 
 	const periodOptions: FilterOption<StatsPeriod>[] = [
+		{ value: '1d', label: '1d' },
 		{ value: '7d', label: '7d' },
 		{ value: '30d', label: '30d' },
 		{ value: 'all', label: 'All' }
@@ -46,7 +47,7 @@
 
 	<section class="flex flex-col gap-4 px-5 pb-6">
 		<div class="rounded-3xl bg-zinc-900 p-4">
-			<form method="GET" action={resolve('/stats')} class="grid grid-cols-3 gap-2">
+			<form method="GET" action={resolve('/stats')} class="grid grid-cols-4 gap-2">
 				<input type="hidden" name="actionType" value={data.stats.actionType} />
 				{#each periodOptions as option (option.value)}
 					<button
