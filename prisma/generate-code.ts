@@ -16,10 +16,12 @@ function generateCode() {
 }
 
 async function main() {
-	const name = process.argv[2];
+	const args = process.argv.slice(2);
+	const revokeSessions = args.includes('--revoke-sessions');
+	const name = args.filter((arg) => arg !== '--revoke-sessions').join(' ');
 
 	if (!name) {
-		console.error('Usage: npm run generate-code -- <name>');
+		console.error('Usage: npm run generate-code -- <name> [--revoke-sessions]');
 		process.exit(1);
 	}
 
@@ -32,9 +34,11 @@ async function main() {
 		process.exit(1);
 	}
 
-	await prisma.session.deleteMany({
-		where: { actorId: existing.id }
-	});
+	if (revokeSessions) {
+		await prisma.session.deleteMany({
+			where: { actorId: existing.id }
+		});
+	}
 
 	const newCode = generateCode();
 
@@ -59,6 +63,9 @@ async function main() {
 
 	console.log(`🔐 Link for ${name}:`);
 	console.log(`${baseUrl}/link?code=${newCode}`);
+	if (revokeSessions) {
+		console.log('Existing sessions revoked.');
+	}
 
 	await prisma.$disconnect();
 }
