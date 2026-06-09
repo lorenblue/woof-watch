@@ -66,6 +66,33 @@ export type EventHistoryResponse = {
 	events: EventHistoryItem[];
 };
 
+export type PushPublicKeyResponse = {
+	publicKey: string;
+};
+
+export type PushSubscriptionPayload = {
+	endpoint: string;
+	expirationTime?: number | null;
+	keys: {
+		p256dh: string;
+		auth: string;
+	};
+};
+
+export type PushSubscriptionResponse = {
+	ok: true;
+};
+
+export type PushNotificationPayload = {
+	title: string;
+	body?: string;
+	url?: string;
+	tag?: string;
+	icon?: string;
+	badge?: string;
+	data?: Record<string, unknown>;
+};
+
 export type ActorLeaderboardEntry = {
 	actorId: string;
 	name: string;

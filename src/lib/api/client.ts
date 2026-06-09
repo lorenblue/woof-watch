@@ -2,7 +2,10 @@ import type {
 	StatusResponse,
 	ActionType,
 	CreateEventResponse,
-	EventHistoryResponse
+	EventHistoryResponse,
+	PushPublicKeyResponse,
+	PushSubscriptionPayload,
+	PushSubscriptionResponse
 } from '$lib/shared/types';
 
 async function handleError(res: Response): Promise<void> {
@@ -58,6 +61,37 @@ export async function getEventHistory(
 ): Promise<EventHistoryResponse> {
 	const params = new URLSearchParams({ dogId, actionType });
 	const res = await fetch(`/api/events?${params.toString()}`);
+
+	await handleError(res);
+	return res.json();
+}
+
+export async function getPushPublicKey(): Promise<PushPublicKeyResponse> {
+	const res = await fetch('/api/push/public-key');
+
+	await handleError(res);
+	return res.json();
+}
+
+export async function savePushSubscription(
+	subscription: PushSubscriptionPayload
+): Promise<PushSubscriptionResponse> {
+	const res = await fetch('/api/push/subscriptions', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(subscription)
+	});
+
+	await handleError(res);
+	return res.json();
+}
+
+export async function deletePushSubscription(endpoint: string): Promise<PushSubscriptionResponse> {
+	const res = await fetch('/api/push/subscriptions', {
+		method: 'DELETE',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ endpoint })
+	});
 
 	await handleError(res);
 	return res.json();
