@@ -10,7 +10,8 @@ export default defineConfig({
 		SvelteKitPWA({
 			registerType: 'autoUpdate',
 			workbox: {
-				importScripts: ['push-sw.js']
+				importScripts: ['push-sw.js'],
+				navigateFallback: null
 			},
 			manifest: {
 				name: 'Woof Watch',
