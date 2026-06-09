@@ -41,19 +41,17 @@ export async function DELETE({ request, cookies }) {
 		throw error(400, 'Invalid push subscription');
 	}
 
-	const endpoint = (body as { endpoint?: unknown }).endpoint;
-	if (typeof endpoint !== 'string' || endpoint.trim() === '') {
+	const rawEndpoint = (body as { endpoint?: unknown }).endpoint;
+	if (typeof rawEndpoint !== 'string' || rawEndpoint.trim() === '') {
 		throw error(400, 'Missing push endpoint');
 	}
 
-	await prisma.pushSubscription.updateMany({
+	const endpoint = rawEndpoint.trim();
+
+	await prisma.pushSubscription.deleteMany({
 		where: {
 			actorId: actor.id,
 			endpoint
-		},
-		data: {
-			active: false,
-			lastSeenAt: new Date()
 		}
 	});
 
