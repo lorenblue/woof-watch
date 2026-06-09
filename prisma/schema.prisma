@@ -15,7 +15,6 @@ model Actor {
   createdAt  DateTime  @default(now())
 
   eventsRecorded DogEvent[] @relation("RecordedBy")
-  eventsUndone   DogEvent[] @relation("UndoneBy")
   pushes         PushSubscription[]
   sessions       Session[]
 
@@ -44,16 +43,12 @@ model DogEvent {
   occurredAt   DateTime @default(now())
   actorId      String
 
-  undoneAt   DateTime?
-  undoneById String?
-
   dog        Dog        @relation(fields: [dogId], references: [id], onDelete: Cascade)
   actionType ActionType @relation(fields: [actionTypeId], references: [key], onDelete: Restrict)
 
-  actor    Actor  @relation("RecordedBy", fields: [actorId], references: [id], onDelete: Restrict)
-  undoneBy Actor? @relation("UndoneBy", fields: [undoneById], references: [id], onDelete: SetNull)
+  actor Actor @relation("RecordedBy", fields: [actorId], references: [id], onDelete: Restrict)
 
-  @@index([dogId, actionTypeId, undoneAt, occurredAt(sort: Desc)])
+  @@index([dogId, actionTypeId, occurredAt(sort: Desc)])
   @@index([actorId])
   @@index([occurredAt])
 

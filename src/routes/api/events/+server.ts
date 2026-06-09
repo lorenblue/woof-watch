@@ -48,7 +48,6 @@ export async function GET({ url, cookies }) {
 		where: {
 			dogId,
 			actionTypeId: actionType,
-			undoneAt: null,
 			occurredAt: {
 				gte: new Date(Date.now() - MAX_EVENT_AGE_MS)
 			}
@@ -98,7 +97,6 @@ export async function POST({ request, cookies }) {
 		where: {
 			dogId,
 			actionTypeId: actionTypeRow.key,
-			undoneAt: null,
 			occurredAt: {
 				gte: duplicateWindowStart,
 				lte: duplicateWindowEnd
@@ -119,7 +117,6 @@ export async function POST({ request, cookies }) {
 		where: {
 			dogId,
 			actionTypeId: actionTypeRow.key,
-			undoneAt: null,
 			occurredAt: {
 				gt: occurredAt
 			}

@@ -94,7 +94,7 @@ export async function getActorStats(
 		prisma.$queryRaw<TotalEventsRow[]>`
 			SELECT COUNT(*)::int AS "totalEvents"
 			FROM dog_event e
-			WHERE e."undoneAt" IS NULL
+			WHERE TRUE
 			${periodSql}
 			${actionTypeSql}
 		`,
@@ -109,7 +109,6 @@ export async function getActorStats(
 			FROM actor a
 			LEFT JOIN dog_event e
 				ON e."actorId" = a."id"
-				AND e."undoneAt" IS NULL
 				${periodSql}
 				${actionTypeSql}
 			GROUP BY a."id", a."name"

@@ -25,10 +25,7 @@ export async function POST({ request, cookies }) {
 		throw error(403, 'Event is too old to undo');
 	}
 
-	await prisma.dogEvent.update({
-		where: { id: eventId },
-		data: { undoneAt: new Date(), undoneById: actor.id }
-	});
+	await prisma.dogEvent.delete({ where: { id: eventId } });
 
 	return json({ ok: true });
 }

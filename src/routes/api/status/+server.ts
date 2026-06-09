@@ -35,7 +35,6 @@ export async function GET() {
 				e."actionTypeId" AS "actionTypeId",
 				MAX(e."occurredAt") AS "occurredAt"
 			FROM dog_event e
-			WHERE e."undoneAt" IS NULL
 			GROUP BY e."dogId", e."actionTypeId"
 		)
 		SELECT
@@ -49,7 +48,6 @@ export async function GET() {
 			ON e."dogId" = l."dogId"
 			AND e."actionTypeId" = l."actionTypeId"
 			AND e."occurredAt" = l."occurredAt"
-			AND e."undoneAt" IS NULL
 		JOIN actor a ON a."id" = e."actorId"
 		JOIN action_type t ON t."key" = e."actionTypeId";
 	`;
