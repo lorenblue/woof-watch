@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import NotificationControls from '$lib/components/NotificationControls.svelte';
 
 	type NavLink = {
 		href: '/' | '/stats';
@@ -14,9 +15,10 @@
 	type Props = {
 		navLink?: NavLink;
 		statusBadge?: StatusBadge;
+		showNotificationControls?: boolean;
 	};
 
-	let { navLink, statusBadge }: Props = $props();
+	let { navLink, statusBadge, showNotificationControls = false }: Props = $props();
 </script>
 
 <header class="px-5 pt-6 pb-3">
@@ -24,6 +26,10 @@
 		<h1 class="text-2xl font-bold tracking-tight">Woof Watch</h1>
 
 		<div class="flex items-center gap-3">
+			{#if showNotificationControls}
+				<NotificationControls />
+			{/if}
+
 			{#if statusBadge}
 				<span
 					class={`rounded-full px-3 py-1 text-xs font-medium ${
