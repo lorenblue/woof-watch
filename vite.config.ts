@@ -9,6 +9,9 @@ export default defineConfig({
 		sveltekit(),
 		SvelteKitPWA({
 			registerType: 'autoUpdate',
+			workbox: {
+				importScripts: ['push-sw.js']
+			},
 			manifest: {
 				name: 'Woof Watch',
 				short_name: 'Woof',
