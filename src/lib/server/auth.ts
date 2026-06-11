@@ -9,12 +9,20 @@ export function getSessionExpiryDate() {
 	return new Date(Date.now() + SESSION_DURATION_MS);
 }
 
+function shouldUseSecureCookies() {
+	const configuredUrl = process.env.ORIGIN ?? process.env.APP_BASE_URL;
+	if (configuredUrl?.startsWith('http://')) return false;
+	if (configuredUrl?.startsWith('https://')) return true;
+
+	return process.env.NODE_ENV === 'production';
+}
+
 export function setSessionCookie(cookies: Cookies, sessionId: string) {
 	cookies.set('sessionId', sessionId, {
 		path: '/',
 		httpOnly: true,
 		sameSite: 'lax',
-		secure: process.env.NODE_ENV === 'production',
+		secure: shouldUseSecureCookies(),
 		maxAge: SESSION_MAX_AGE_SECONDS
 	});
 }
