@@ -3,7 +3,7 @@
 	import NotificationControls from '$lib/components/NotificationControls.svelte';
 
 	type NavLink = {
-		href: '/' | '/stats' | '/reminders';
+		href: '/' | '/stats';
 		label: string;
 	};
 

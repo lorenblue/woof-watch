@@ -7,7 +7,7 @@
 	import AppHeader from '$lib/components/AppHeader.svelte';
 
 	type Props = {
-		data: { actorName: string | null; canViewReminderDebug: boolean; dogs: DogStatus[] };
+		data: { actorName: string | null; dogs: DogStatus[] };
 	};
 
 	let { data }: Props = $props();
@@ -126,14 +126,7 @@
 
 <main class="flex h-dvh flex-col bg-black text-zinc-100">
 	<AppHeader
-		navLinks={data.actorName
-			? data.canViewReminderDebug
-				? [
-						{ href: '/stats', label: 'Stats' },
-						{ href: '/reminders', label: 'Reminders' }
-					]
-				: [{ href: '/stats', label: 'Stats' }]
-			: undefined}
+		navLinks={data.actorName ? [{ href: '/stats', label: 'Stats' }] : undefined}
 		statusBadge={data.actorName ? undefined : { label: '! Not linked', tone: 'warning' }}
 	/>
 
