@@ -58,3 +58,25 @@ export async function requireActor(cookies: Cookies) {
 	if (!actor) throw error(401, 'Authentication required');
 	return actor;
 }
+
+function getReminderDebugActorNames() {
+	return (process.env.REMINDER_DEBUG_ACTOR_NAMES ?? '')
+		.split(',')
+		.map((name) => name.trim().toLowerCase())
+		.filter(Boolean);
+}
+
+export function canViewReminderDebug(actor: { name: string } | null | undefined) {
+	if (!actor) return false;
+
+	const allowedNames = getReminderDebugActorNames();
+	if (allowedNames.length === 0) return false;
+
+	return allowedNames.includes(actor.name.trim().toLowerCase());
+}
+
+export async function requireReminderDebugActor(cookies: Cookies) {
+	const actor = await requireActor(cookies);
+	if (!canViewReminderDebug(actor)) throw error(404, 'Not found');
+	return actor;
+}

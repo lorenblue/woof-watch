@@ -1,7 +1,7 @@
 import type { LayoutServerLoad } from './$types';
-import { getSessionActor } from '$lib/server/auth';
+import { canViewReminderDebug, getSessionActor } from '$lib/server/auth';
 
 export const load: LayoutServerLoad = async ({ cookies }) => {
 	const actor = await getSessionActor(cookies);
-	return { actorName: actor?.name ?? null };
+	return { actorName: actor?.name ?? null, canViewReminderDebug: canViewReminderDebug(actor) };
 };

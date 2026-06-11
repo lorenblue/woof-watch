@@ -3,7 +3,7 @@
 	import NotificationControls from '$lib/components/NotificationControls.svelte';
 
 	type NavLink = {
-		href: '/' | '/stats';
+		href: '/' | '/stats' | '/reminders';
 		label: string;
 	};
 
@@ -14,11 +14,13 @@
 
 	type Props = {
 		navLink?: NavLink;
+		navLinks?: NavLink[];
 		statusBadge?: StatusBadge;
 		showNotificationControls?: boolean;
 	};
 
-	let { navLink, statusBadge, showNotificationControls = false }: Props = $props();
+	let { navLink, navLinks, statusBadge, showNotificationControls = false }: Props = $props();
+	let links = $derived(navLinks ?? (navLink ? [navLink] : []));
 </script>
 
 <header class="px-5 pt-6 pb-3">
@@ -42,14 +44,14 @@
 				</span>
 			{/if}
 
-			{#if navLink}
+			{#each links as link (link.href)}
 				<a
-					href={resolve(navLink.href)}
+					href={resolve(link.href)}
 					class="rounded-full border border-zinc-800 px-3 py-1 text-xs font-medium text-zinc-300 transition hover:border-zinc-700 hover:text-zinc-100"
 				>
-					{navLink.label}
+					{link.label}
 				</a>
-			{/if}
+			{/each}
 		</div>
 	</div>
 </header>

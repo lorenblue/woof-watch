@@ -28,6 +28,8 @@ services:
         condition: service_healthy
     environment:
       APP_DOMAIN: ${APP_DOMAIN}
+      ORIGIN: ${ORIGIN:-https://${APP_DOMAIN}}
+      REMINDER_DEBUG_ACTOR_NAMES: ${REMINDER_DEBUG_ACTOR_NAMES:-}
       DEFAULT_ACTORS: ${DEFAULT_ACTORS:-}
       DEFAULT_DOGS: ${DEFAULT_DOGS:-}
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
