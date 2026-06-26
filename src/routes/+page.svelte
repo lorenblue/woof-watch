@@ -128,6 +128,7 @@
 	<AppHeader
 		navLinks={data.actorName ? [{ href: '/stats', label: 'Stats' }] : undefined}
 		statusBadge={data.actorName ? undefined : { label: '! Not linked', tone: 'warning' }}
+		showNotificationControls={Boolean(data.actorName)}
 	/>
 
 	<!-- Dogs Area -->
