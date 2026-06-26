@@ -52,6 +52,29 @@ services:
       - web
       - internal
 
+  reminders:
+    image: curlimages/curl:latest
+    container_name: woof-watch-reminders
+    restart: unless-stopped
+    depends_on:
+      - app
+    environment:
+      REMINDER_RUN_SECRET: ${REMINDER_RUN_SECRET}
+      REMINDER_RUN_INTERVAL_SECONDS: ${REMINDER_RUN_INTERVAL_SECONDS:-900}
+    command: >
+      sh -c '
+        while true; do
+          date;
+          curl -fsS -X POST
+            -H "Authorization: Bearer $${REMINDER_RUN_SECRET}"
+            "http://app:3000/api/reminders/run" || true;
+          echo;
+          sleep "$${REMINDER_RUN_INTERVAL_SECONDS}";
+        done
+      '
+    networks:
+      - internal
+
 volumes:
   postgres_data:
 
