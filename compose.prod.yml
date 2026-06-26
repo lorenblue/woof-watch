@@ -35,6 +35,10 @@ services:
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
       VAPID_SUBJECT: ${VAPID_SUBJECT}
+      REMINDER_RUN_SECRET: ${REMINDER_RUN_SECRET:-}
+      REMINDER_TIME_ZONE: ${REMINDER_TIME_ZONE:-America/Vancouver}
+      REMINDER_DUE_WINDOW_MINUTES: ${REMINDER_DUE_WINDOW_MINUTES:-30}
+      REMINDER_CONFIG_PATH: ${REMINDER_CONFIG_PATH:-/app/config/reminders.json}
     labels:
       - 'traefik.enable=true'
       - 'traefik.docker.network=web'
@@ -42,6 +46,8 @@ services:
       - 'traefik.http.routers.woofwatch.entrypoints=websecure'
       - 'traefik.http.routers.woofwatch.tls.certresolver=myresolver'
       - 'traefik.http.services.woofwatch.loadbalancer.server.port=3000'
+    volumes:
+      - ./config:/app/config:ro
     networks:
       - web
       - internal

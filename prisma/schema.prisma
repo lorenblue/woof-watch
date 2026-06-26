@@ -25,14 +25,16 @@ model Dog {
   id   String @id @default(cuid())
   name String @unique
 
-  events DogEvent[]
+  events             DogEvent[]
+  reminderDeliveries ReminderDelivery[]
   @@map("dog")
 }
 
 model ActionType {
   key String @id
 
-  events DogEvent[]
+  events             DogEvent[]
+  reminderDeliveries ReminderDelivery[]
   @@map("action_type")
 }
 
@@ -86,4 +88,21 @@ model PushSubscription {
   @@index([actorId])
 
   @@map("push_subscription")
+}
+
+model ReminderDelivery {
+  id           String   @id @default(cuid())
+  dogId        String
+  actionTypeId String
+  ruleKey      String
+  localDate    String
+  sentAt       DateTime @default(now())
+
+  dog        Dog        @relation(fields: [dogId], references: [id], onDelete: Cascade)
+  actionType ActionType @relation(fields: [actionTypeId], references: [key], onDelete: Restrict)
+
+  @@unique([dogId, actionTypeId, ruleKey, localDate])
+  @@index([sentAt])
+
+  @@map("reminder_delivery")
 }

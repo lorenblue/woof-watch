@@ -1,0 +1,67 @@
+{
+	"dogs": {
+		"*": [
+			{
+				"key": "pee-gap",
+				"actionType": "pee",
+				"lookbackDuration": "5:00",
+				"activeStart": "08:00",
+				"activeEnd": "02:00",
+				"title": "Pee overdue?",
+				"body": "No pee logged in the last 5 hours. Take them out?"
+			},
+			{
+				"key": "evening-poo",
+				"actionType": "poo",
+				"checkTime": "21:30",
+				"lookbackDuration": "21:30",
+				"title": "Poo today?",
+				"body": "No poo logged today. Anything to add?"
+			}
+		],
+		"Scout": [
+			{
+				"key": "breakfast",
+				"actionType": "eat",
+				"checkTime": "09:30",
+				"lookbackDuration": "4:30",
+				"title": "Breakfast logged?",
+				"body": "No food logged this morning. Anything to add?"
+			},
+			{
+				"key": "lunch",
+				"actionType": "eat",
+				"checkTime": "13:30",
+				"lookbackDuration": "2:30",
+				"title": "Lunch logged?",
+				"body": "No food logged around lunch. Anything to add?"
+			},
+			{
+				"key": "dinner",
+				"actionType": "eat",
+				"checkTime": "19:30",
+				"lookbackDuration": "5:30",
+				"title": "Dinner logged?",
+				"body": "No food logged this evening. Anything to add?"
+			}
+		],
+		"Bailey": [
+			{
+				"key": "breakfast",
+				"actionType": "eat",
+				"checkTime": "09:30",
+				"lookbackDuration": "4:30",
+				"title": "Breakfast logged?",
+				"body": "No food logged this morning. Anything to add?"
+			},
+			{
+				"key": "dinner",
+				"actionType": "eat",
+				"checkTime": "19:30",
+				"lookbackDuration": "5:30",
+				"title": "Dinner logged?",
+				"body": "No food logged this evening. Anything to add?"
+			}
+		]
+	}
+}

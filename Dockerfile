@@ -23,6 +23,7 @@ RUN addgroup --system sveltekit && adduser --system sveltekit --ingroup svelteki
 COPY --from=builder --chown=sveltekit:sveltekit /app/build ./build
 COPY --from=builder --chown=sveltekit:sveltekit /app/node_modules ./node_modules
 COPY --from=builder --chown=sveltekit:sveltekit /app/prisma ./prisma
+COPY --from=builder --chown=sveltekit:sveltekit /app/config ./config
 COPY --from=builder --chown=sveltekit:sveltekit /app/prisma.config.ts ./prisma.config.ts
 COPY --chown=sveltekit:sveltekit package.json .
 
