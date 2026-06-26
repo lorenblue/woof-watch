@@ -61,17 +61,16 @@ services:
     environment:
       REMINDER_RUN_SECRET: ${REMINDER_RUN_SECRET}
       REMINDER_RUN_INTERVAL_SECONDS: ${REMINDER_RUN_INTERVAL_SECONDS:-900}
-    command: >
-      sh -c '
+    command:
+      - sh
+      - -c
+      - |
         while true; do
-          date;
-          curl -fsS -X POST
-            -H "Authorization: Bearer $${REMINDER_RUN_SECRET}"
-            "http://app:3000/api/reminders/run" || true;
-          echo;
-          sleep "$${REMINDER_RUN_INTERVAL_SECONDS}";
+          date
+          curl -fsS -X POST -H "Authorization: Bearer $${REMINDER_RUN_SECRET}" "http://app:3000/api/reminders/run" || true
+          echo
+          sleep "$${REMINDER_RUN_INTERVAL_SECONDS}"
         done
-      '
     networks:
       - internal
 
