@@ -85,6 +85,30 @@ npx prisma generate
 
 `compose.prod.yml` is a deployment reference for the published Docker image and Traefik. It is not required for local development and should be adapted for the target server, domain, network, and environment values.
 
+## Production Backups
+
+The database can be backed up from the running Postgres container and copied to an rclone remote:
+
+```sh
+sudo apt install rclone
+sudo rclone config
+sudo env RCLONE_REMOTE=gdrive:woof-watch-backups ./scripts/backup-database.sh
+```
+
+The script writes timestamped custom-format Postgres dumps to `/opt/backups/woof-watch`, uploads the dump and checksum to the rclone remote, and removes local dump files older than 14 days.
+
+For a daily backup on the VM, install the script somewhere stable and add a cron entry:
+
+```sh
+sudo install -m 700 scripts/backup-database.sh /usr/local/bin/woof-watch-backup
+```
+
+```cron
+17 3 * * * RCLONE_REMOTE=gdrive:woof-watch-backups /usr/local/bin/woof-watch-backup >> /var/log/woof-watch-backup.log 2>&1
+```
+
+The cron entry assumes `sudo rclone config` was used, so the root user has the `gdrive` remote.
+
 ## Checks
 
 ```sh
