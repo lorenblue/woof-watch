@@ -5,6 +5,29 @@ export type PushRegistrationResult =
 	| { ok: true; subscription: PushSubscription }
 	| { ok: false; reason: 'unsupported' | 'denied' | 'unavailable' };
 
+const USER_DISABLED_PUSH_KEY = 'woof-watch:user-disabled-push';
+
+export function wasPushDisabledByUser() {
+	try {
+		return window.localStorage.getItem(USER_DISABLED_PUSH_KEY) === 'true';
+	} catch {
+		return false;
+	}
+}
+
+export function rememberPushDisabledByUser(disabled: boolean) {
+	try {
+		if (disabled) {
+			window.localStorage.setItem(USER_DISABLED_PUSH_KEY, 'true');
+			return;
+		}
+
+		window.localStorage.removeItem(USER_DISABLED_PUSH_KEY);
+	} catch {
+		// If storage is unavailable, keep push setup usable for this session.
+	}
+}
+
 function urlBase64ToUint8Array(value: string) {
 	const padding = '='.repeat((4 - (value.length % 4)) % 4);
 	const base64 = (value + padding).replaceAll('-', '+').replaceAll('_', '/');
@@ -41,6 +64,41 @@ export function isPushSupported() {
 	return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
 }
 
+async function getOrCreatePushSubscription() {
+	const [{ publicKey }, registration] = await Promise.all([
+		getPushPublicKey(),
+		navigator.serviceWorker.ready
+	]);
+
+	const existing = await registration.pushManager.getSubscription();
+	return (
+		existing ??
+		(await registration.pushManager.subscribe({
+			userVisibleOnly: true,
+			applicationServerKey: urlBase64ToUint8Array(publicKey)
+		}))
+	);
+}
+
+async function saveBrowserPushSubscription(subscription: PushSubscription) {
+	const payload = toPayload(subscription);
+	if (!payload) {
+		return false;
+	}
+
+	await savePushSubscription(payload);
+	return true;
+}
+
+export async function syncGrantedPushNotifications() {
+	if (!isPushSupported() || Notification.permission !== 'granted' || wasPushDisabledByUser()) {
+		return false;
+	}
+
+	const subscription = await getOrCreatePushSubscription();
+	return saveBrowserPushSubscription(subscription);
+}
+
 export async function registerPushNotifications(): Promise<PushRegistrationResult> {
 	if (!isPushSupported()) {
 		return { ok: false, reason: 'unsupported' };
@@ -51,25 +109,13 @@ export async function registerPushNotifications(): Promise<PushRegistrationResul
 		return { ok: false, reason: 'denied' };
 	}
 
-	const [{ publicKey }, registration] = await Promise.all([
-		getPushPublicKey(),
-		navigator.serviceWorker.ready
-	]);
-
-	const existing = await registration.pushManager.getSubscription();
-	const subscription =
-		existing ??
-		(await registration.pushManager.subscribe({
-			userVisibleOnly: true,
-			applicationServerKey: urlBase64ToUint8Array(publicKey)
-		}));
-
-	const payload = toPayload(subscription);
-	if (!payload) {
+	const subscription = await getOrCreatePushSubscription();
+	const wasSaved = await saveBrowserPushSubscription(subscription);
+	if (!wasSaved) {
 		return { ok: false, reason: 'unavailable' };
 	}
 
-	await savePushSubscription(payload);
+	rememberPushDisabledByUser(false);
 
 	return { ok: true, subscription };
 }

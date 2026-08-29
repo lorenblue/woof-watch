@@ -2,7 +2,9 @@
 	import { onDestroy, onMount } from 'svelte';
 	import {
 		isPushSupported,
+		rememberPushDisabledByUser,
 		registerPushNotifications,
+		syncGrantedPushNotifications,
 		unregisterPushNotifications
 	} from '$lib/push';
 
@@ -53,6 +55,15 @@
 		}
 
 		permission = Notification.permission;
+		if (permission === 'granted') {
+			try {
+				isRegistered = await syncGrantedPushNotifications();
+				return;
+			} catch (err) {
+				console.error(err);
+			}
+		}
+
 		const registration = await navigator.serviceWorker.ready;
 		isRegistered = Boolean(await registration.pushManager.getSubscription());
 	}
@@ -102,6 +113,7 @@
 
 		try {
 			await unregisterPushNotifications();
+			rememberPushDisabledByUser(true);
 			isRegistered = false;
 		} catch (err) {
 			console.error(err);
