@@ -12,7 +12,8 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
-		"generate-code": "tsx prisma/generate-code.ts"
+		"generate-code": "tsx prisma/generate-code.ts",
+		"migrate:postgres-to-sqlite": "tsx scripts/migrate-postgres-to-sqlite.ts"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^2.0.2",
@@ -24,6 +25,7 @@
 		"@types/howler": "^2.2.12",
 		"@types/humanize-duration": "^3.27.4",
 		"@types/node": "^25.9.1",
+		"@types/pg": "^8.23.1",
 		"@vite-pwa/sveltekit": "^1.1.0",
 		"eslint": "^9.39.2",
 		"eslint-config-prettier": "^10.1.8",
@@ -41,12 +43,13 @@
 		"vite": "^7.3.1"
 	},
 	"dependencies": {
-		"@prisma/adapter-pg": "^7.8.0",
+		"@prisma/adapter-better-sqlite3": "^7.8.0",
 		"@prisma/client": "^7.8.0",
+		"better-sqlite3": "^12.11.1",
 		"howler": "^2.2.4",
 		"humanize-duration": "^3.33.2",
 		"ios-vibrator-pro-max": "^2.0.2",
-		"pg": "^8.21.0",
+		"pg": "^8.23.0",
 		"tsx": "^4.22.3",
 		"web-push": "^3.6.7"
 	}

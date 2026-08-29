@@ -1,14 +1,36 @@
 import 'dotenv/config';
-import pg from 'pg';
+import { mkdirSync } from 'node:fs';
+import path from 'node:path';
 import { PrismaClient } from './generated/client';
-import { PrismaPg } from '@prisma/adapter-pg';
+import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
 import crypto from 'crypto';
 
-const pool = new pg.Pool({
-	connectionString: process.env.DATABASE_URL
-});
+const databaseUrl = process.env.DATABASE_URL ?? 'file:./data/woof-watch.db';
 
-const adapter = new PrismaPg(pool);
+function ensureSqliteDirectory(url: string) {
+	if (!url.startsWith('file:')) {
+		throw new Error(
+			`DATABASE_URL must be a SQLite file: URL for this branch. Received ${url}`
+		);
+	}
+
+	const filePath = url.replace(/^file:/, '');
+	if (filePath === ':memory:') return;
+
+	const directory = path.dirname(filePath);
+	if (directory !== '.') {
+		mkdirSync(directory, { recursive: true });
+	}
+}
+
+ensureSqliteDirectory(databaseUrl);
+
+const adapter = new PrismaBetterSqlite3(
+	{ url: databaseUrl },
+	{
+		timestampFormat: 'iso8601'
+	}
+);
 const prisma = new PrismaClient({ adapter });
 
 function generateCode() {

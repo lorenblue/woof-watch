@@ -1,5 +1,5 @@
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
 }
 
 generator client {
@@ -14,7 +14,7 @@ model Actor {
   codeUsedAt DateTime?
   createdAt  DateTime  @default(now())
 
-  eventsRecorded DogEvent[] @relation("RecordedBy")
+  eventsRecorded DogEvent[]         @relation("RecordedBy")
   pushes         PushSubscription[]
   sessions       Session[]
 
@@ -27,6 +27,7 @@ model Dog {
 
   events             DogEvent[]
   reminderDeliveries ReminderDelivery[]
+
   @@map("dog")
 }
 
@@ -35,6 +36,7 @@ model ActionType {
 
   events             DogEvent[]
   reminderDeliveries ReminderDelivery[]
+
   @@map("action_type")
 }
 
@@ -53,7 +55,6 @@ model DogEvent {
   @@index([dogId, actionTypeId, occurredAt(sort: Desc)])
   @@index([actorId])
   @@index([occurredAt])
-
   @@map("dog_event")
 }
 
@@ -69,7 +70,6 @@ model Session {
   ipAddress String?
 
   @@index([actorId])
-
   @@map("session")
 }
 
@@ -86,7 +86,6 @@ model PushSubscription {
   actor Actor @relation(fields: [actorId], references: [id], onDelete: Cascade)
 
   @@index([actorId])
-
   @@map("push_subscription")
 }
 
@@ -103,6 +102,5 @@ model ReminderDelivery {
 
   @@unique([dogId, actionTypeId, ruleKey, localDate])
   @@index([sentAt])
-
   @@map("reminder_delivery")
 }

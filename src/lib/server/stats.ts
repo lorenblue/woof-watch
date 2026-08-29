@@ -6,7 +6,7 @@ import type {
 	StatsActionFilter,
 	StatsPeriod
 } from '$lib/shared/types';
-import { Prisma } from '../../../prisma/generated/client';
+import type { Prisma } from '../../../prisma/generated/client';
 
 const PERIOD_ALIASES: Record<string, StatsPeriod> = {
 	'1d': '1d',
@@ -27,19 +27,6 @@ const ACTION_TYPE_ALIASES: Record<string, StatsActionFilter> = {
 	pee: 'pee',
 	poo: 'poo',
 	eat: 'eat'
-};
-
-type TotalEventsRow = {
-	totalEvents: number;
-};
-
-type ActorSummaryRow = {
-	actorId: string;
-	name: string;
-	total: number;
-	pee: number;
-	poo: number;
-	eat: number;
 };
 
 export function parseStatsPeriod(url: URL): StatsPeriod {
@@ -64,67 +51,107 @@ export function parseStatsActionType(url: URL): StatsActionFilter {
 	return actionType;
 }
 
-function periodFilter(period: StatsPeriod) {
+function periodStart(period: StatsPeriod) {
+	const now = Date.now();
+
 	switch (period) {
 		case '1d':
-			return Prisma.sql`AND e."occurredAt" >= now() - interval '24 hours'`;
+			return new Date(now - 24 * 60 * 60 * 1000);
 		case '7d':
-			return Prisma.sql`AND e."occurredAt" >= now() - interval '7 days'`;
+			return new Date(now - 7 * 24 * 60 * 60 * 1000);
 		case '30d':
-			return Prisma.sql`AND e."occurredAt" >= now() - interval '30 days'`;
+			return new Date(now - 30 * 24 * 60 * 60 * 1000);
 		case 'all':
-			return Prisma.empty;
+			return null;
 	}
 }
 
-function actionTypeFilter(actionType: StatsActionFilter) {
-	if (actionType === 'all') return Prisma.empty;
+function eventWhere(period: StatsPeriod, actionType: StatsActionFilter): Prisma.DogEventWhereInput {
+	const where: Prisma.DogEventWhereInput = {};
+	const start = periodStart(period);
 
-	return Prisma.sql`AND e."actionTypeId" = ${actionType satisfies ActionType}`;
+	if (start) {
+		where.occurredAt = {
+			gte: start
+		};
+	}
+
+	if (actionType !== 'all') {
+		where.actionTypeId = actionType satisfies ActionType;
+	}
+
+	return where;
 }
 
 export async function getActorStats(
 	period: StatsPeriod,
 	actionType: StatsActionFilter
 ): Promise<ActorStatsResponse> {
-	const periodSql = periodFilter(period);
-	const actionTypeSql = actionTypeFilter(actionType);
+	const where = eventWhere(period, actionType);
 
-	const [totalEventsRows, actorRows] = await Promise.all([
-		prisma.$queryRaw<TotalEventsRow[]>`
-			SELECT COUNT(*)::int AS "totalEvents"
-			FROM dog_event e
-			WHERE TRUE
-			${periodSql}
-			${actionTypeSql}
-		`,
-		prisma.$queryRaw<ActorSummaryRow[]>`
-			SELECT
-				a."id" AS "actorId",
-				a."name" AS "name",
-				COUNT(e."id")::int AS "total",
-				COUNT(*) FILTER (WHERE e."actionTypeId" = 'pee')::int AS "pee",
-				COUNT(*) FILTER (WHERE e."actionTypeId" = 'poo')::int AS "poo",
-				COUNT(*) FILTER (WHERE e."actionTypeId" = 'eat')::int AS "eat"
-			FROM actor a
-			LEFT JOIN dog_event e
-				ON e."actorId" = a."id"
-				${periodSql}
-				${actionTypeSql}
-			GROUP BY a."id", a."name"
-			ORDER BY "total" DESC, a."name" ASC
-		`
+	const [actors, groupedEvents] = await Promise.all([
+		prisma.actor.findMany({
+			orderBy: {
+				name: 'asc'
+			}
+		}),
+		prisma.dogEvent.groupBy({
+			by: ['actorId', 'actionTypeId'],
+			where,
+			_count: {
+				_all: true
+			}
+		})
 	]);
 
-	const totalEvents = totalEventsRows[0]?.totalEvents ?? 0;
+	const totalEvents = groupedEvents.reduce((total, row) => total + row._count._all, 0);
+	const countsByActor = new Map<
+		string,
+		{
+			total: number;
+			pee: number;
+			poo: number;
+			eat: number;
+		}
+	>();
+
+	for (const row of groupedEvents) {
+		const counts = countsByActor.get(row.actorId) ?? {
+			total: 0,
+			pee: 0,
+			poo: 0,
+			eat: 0
+		};
+		const count = row._count._all;
+
+		counts.total += count;
+		if (row.actionTypeId === 'pee' || row.actionTypeId === 'poo' || row.actionTypeId === 'eat') {
+			counts[row.actionTypeId] += count;
+		}
+
+		countsByActor.set(row.actorId, counts);
+	}
 
 	return {
 		period,
 		actionType,
 		totalEvents,
-		actors: actorRows.map((row) => ({
-			...row,
-			shareOfTotal: totalEvents === 0 ? 0 : row.total / totalEvents
-		}))
+		actors: actors
+			.map((actor) => {
+				const counts = countsByActor.get(actor.id) ?? {
+					total: 0,
+					pee: 0,
+					poo: 0,
+					eat: 0
+				};
+
+				return {
+					actorId: actor.id,
+					name: actor.name,
+					...counts,
+					shareOfTotal: totalEvents === 0 ? 0 : counts.total / totalEvents
+				};
+			})
+			.sort((a, b) => b.total - a.total || a.name.localeCompare(b.name))
 	};
 }

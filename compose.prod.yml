@@ -1,37 +1,15 @@
 services:
-  postgres:
-    image: postgres:18-alpine
-    container_name: woof-watch-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      PGDATA: /var/lib/postgresql/data/pgdata
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
-      interval: 5s
-      timeout: 5s
-      retries: 10
-    networks:
-      - internal
-
   app:
     image: ghcr.io/lorenblue/woof-watch:latest
     pull_policy: always
     container_name: woof-watch-app
     restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
     environment:
       APP_DOMAIN: ${APP_DOMAIN}
       ORIGIN: ${ORIGIN:-https://${APP_DOMAIN}}
       DEFAULT_ACTORS: ${DEFAULT_ACTORS:-}
       DEFAULT_DOGS: ${DEFAULT_DOGS:-}
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      DATABASE_URL: file:/app/data/woof-watch.db
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
       VAPID_SUBJECT: ${VAPID_SUBJECT}
@@ -48,6 +26,7 @@ services:
       - 'traefik.http.services.woofwatch.loadbalancer.server.port=3000'
     volumes:
       - ./config:/app/config:ro
+      - ${SQLITE_DATA_DIR:-./data}:/app/data
     networks:
       - web
       - internal
@@ -72,9 +51,6 @@ services:
         done
     networks:
       - internal
-
-volumes:
-  postgres_data:
 
 networks:
   web:

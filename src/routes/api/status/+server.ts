@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { prisma } from '$lib/server/prisma';
-import type { DogStatus, LastEvt, StatusResponse } from '$lib/shared/types';
+import type { LastEvt, StatusResponse } from '$lib/shared/types';
+import { Prisma } from '../../../../prisma/generated/client';
 
 type LatestRow = {
 	eventId: string;
@@ -28,34 +29,40 @@ export async function GET() {
 		return json(payload);
 	}
 
+	const dogIds = dogs.map((dog) => dog.id);
 	const rows = await prisma.$queryRaw<LatestRow[]>`
-		WITH latest AS (
+		WITH ranked AS (
 			SELECT
+				e."id" AS "eventId",
 				e."dogId" AS "dogId",
-				e."actionTypeId" AS "actionTypeId",
-				MAX(e."occurredAt") AS "occurredAt"
+				e."actionTypeId" AS "actionType",
+				e."occurredAt" AS "occurredAt",
+				a."name" AS "actorName",
+				ROW_NUMBER() OVER (
+					PARTITION BY e."dogId", e."actionTypeId"
+					ORDER BY e."occurredAt" DESC, e."id" DESC
+				) AS "rank"
 			FROM dog_event e
-			GROUP BY e."dogId", e."actionTypeId"
+			JOIN actor a ON a."id" = e."actorId"
+			WHERE e."dogId" IN (${Prisma.join(dogIds)})
+				AND e."actionTypeId" IN ('pee', 'poo', 'eat')
 		)
 		SELECT
-			e."id" AS "eventId",
-			l."dogId" AS "dogId",
-			t."key" AS "actionType",
-			e."occurredAt" AS "occurredAt",
-			a."name" AS "actorName"
-		FROM latest l
-		JOIN dog_event e
-			ON e."dogId" = l."dogId"
-			AND e."actionTypeId" = l."actionTypeId"
-			AND e."occurredAt" = l."occurredAt"
-		JOIN actor a ON a."id" = e."actorId"
-		JOIN action_type t ON t."key" = e."actionTypeId";
+			"eventId",
+			"dogId",
+			"actionType",
+			"occurredAt",
+			"actorName"
+		FROM ranked
+		WHERE "rank" = 1
 	`;
 
 	const byKey = new Map<string, LatestRow>();
-	for (const r of rows) byKey.set(`${r.dogId}:${r.actionType}`, r);
+	for (const row of rows) {
+		byKey.set(`${row.dogId}:${row.actionType}`, row);
+	}
 
-	const result: DogStatus[] = dogs.map((dog) => ({
+	const result = dogs.map((dog) => ({
 		dogId: dog.id,
 		name: dog.name,
 		lastPee: toLastEvt(byKey.get(`${dog.id}:pee`)),

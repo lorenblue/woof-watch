@@ -15,10 +15,10 @@ Woof Watch is a mobile-first PWA for coordinating dog care across a household. I
 ## Tech Stack
 
 - SvelteKit and TypeScript
-- Prisma ORM with PostgreSQL
+- Prisma ORM with SQLite
 - Docker and Docker Compose
 - PWA service worker support
-- Raw SQL for latest-event/status aggregation
+- Server-side status and stats aggregation
 - Server-side validation and session-based access
 
 ## Local Docker Setup
@@ -29,7 +29,7 @@ Create a local environment file:
 cp .env.example .env
 ```
 
-Start PostgreSQL and the app:
+Start the app:
 
 ```sh
 docker compose -f compose.dev.yml up -d --build
@@ -51,7 +51,6 @@ Useful Docker commands:
 
 ```sh
 docker compose -f compose.dev.yml logs -f app
-docker compose -f compose.dev.yml logs -f postgres
 docker compose -f compose.dev.yml down
 ```
 
@@ -66,7 +65,7 @@ npm install
 Set `DATABASE_URL` when running the app directly on your machine:
 
 ```sh
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/woof_watch?schema=public"
+DATABASE_URL="file:./data/woof-watch.db"
 ```
 
 Run the dev server:
@@ -87,15 +86,43 @@ npx prisma generate
 
 ## Production Backups
 
-The database can be backed up from the running Postgres container and copied to an rclone remote:
+The database can be backed up with SQLite's online backup command and copied to an rclone remote:
 
 ```sh
-sudo apt install rclone
+sudo apt install rclone sqlite3
 sudo rclone config
 sudo /usr/local/bin/woof-watch-backup
 ```
 
-The script writes timestamped custom-format Postgres dumps to `/opt/backups/woof-watch`, uploads the dump and checksum to `gdrive:woof-watch-backups`, and removes local dump files older than 14 days.
+The script writes timestamped SQLite backups to `/opt/backups/woof-watch`, uploads the backup and checksum to `gdrive:woof-watch-backups`, and removes local backup files older than 14 days. By default, it backs up `/opt/woof-watch/data/woof-watch.db`; set `SQLITE_DB_PATH` if your VM uses a different path.
+
+## PostgreSQL to SQLite Migration
+
+When using Docker Compose, the app container always uses `file:/app/data/woof-watch.db`. The host directory is controlled by `SQLITE_DATA_DIR`, so an old `.env` value like `DATABASE_URL=postgresql://...` cannot accidentally point the SQLite image at Postgres.
+
+For the VM layout used by `compose.prod.yml`, create the host data directory before starting the SQLite-backed app:
+
+```sh
+sudo mkdir -p /opt/woof-watch/data
+```
+
+The container starts as root only long enough to chown `/app/data`, then runs the app as the `sveltekit` user.
+
+For final production cutover, stop the old app and reminder containers before copying data so no logs can be written to Postgres during the migration. Keep the old `woof-watch-postgres` container running, then run the copy from the SQLite-capable app image:
+
+```sh
+sudo mkdir -p /opt/woof-watch/data
+docker run --rm \
+  --network container:woof-watch-postgres \
+  -v /opt/woof-watch/data:/app/data \
+  -e DATABASE_URL="file:/app/data/woof-watch.db" \
+  -e SQLITE_DATABASE_URL="file:/app/data/woof-watch.db" \
+  -e POSTGRES_DATABASE_URL="postgresql://USER:PASSWORD@127.0.0.1:5432/DB?schema=public" \
+  ghcr.io/lorenblue/woof-watch:latest \
+  sh -c 'node scripts/ensure-sqlite-db.mjs && npx prisma migrate deploy && npm run migrate:postgres-to-sqlite'
+```
+
+The migration script refuses to write into a non-empty SQLite database unless `--force` is passed.
 
 For a daily backup on the VM, install the script somewhere stable and add a cron entry:
 
